@@ -13,6 +13,10 @@ export const metadata: Metadata = {
     locale: 'es_PE',
     type: 'website',
   },
+  icons: {
+    icon: '/logo-form-khipu.png',
+    apple: '/logo-form-khipu.png',
+  },
 };
 
 export default function RootLayout({
