@@ -1,0 +1,52 @@
+export interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  avatar_url: string | null;
+  google_id: string | null;
+  is_guest: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Form {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  is_public: boolean;
+  access_code: string | null;
+  created_at: string;
+  updated_at: string;
+  field_count?: number;
+  response_count?: number;
+}
+
+export interface FormField {
+  id: string;
+  form_id: string;
+  type: 'text' | 'textarea' | 'number' | 'email' | 'select' | 'checkbox';
+  label: string;
+  required: boolean;
+  options: string[];
+  order_index: number;
+  created_at: string;
+}
+
+export interface Response {
+  id: string;
+  form_id: string;
+  created_at: string;
+}
+
+export interface ResponseAnswer {
+  id: string;
+  response_id: string;
+  field_id: string;
+  value: string | null;
+  created_at: string;
+}
+
+export interface ResponseWithAnswers extends Response {
+  answers: (ResponseAnswer & { field_label: string; field_type: string })[];
+}
