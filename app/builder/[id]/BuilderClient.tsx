@@ -29,6 +29,13 @@ function FieldIcon({ path }: { path: string }) {
   );
 }
 
+export default function BuilderClient({ form, fields: initialFields }: Props) {
+  const store = useBuilderStore();
+  const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [openSections, setOpenSections] = useState({
     fields: true,
@@ -359,8 +366,6 @@ function FieldIcon({ path }: { path: string }) {
                 <textarea className="textarea" style={{ minHeight: '60px', fontSize: '12px' }} value={store.informedConsent} onChange={(e) => store.setInformedConsent(e.target.value)} placeholder="Texto legal..." />
               </div>
             </SidebarSection>
-          </div>
-        </aside>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
             <Link
