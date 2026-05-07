@@ -29,14 +29,18 @@ function FieldIcon({ path }: { path: string }) {
   );
 }
 
-export default function BuilderClient({ form, fields: initialFields }: Props) {
-  const store = useBuilderStore();
-  const [saved, setSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [openSections, setOpenSections] = useState({
+    fields: true,
+    general: false,
+    gamification: false,
+    presentation: false,
+    legal: false,
+  });
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   useEffect(() => {
     store.setFormId(form.id);
@@ -221,171 +225,142 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
         <aside
           className={`builder-sidebar${sidebarOpen ? ' sidebar-open' : ''}`}
           style={{
-            width: '220px', flexShrink: 0, borderRight: '1px solid var(--border)',
+            width: '240px', flexShrink: 0, borderRight: '1px solid var(--border)',
             background: 'var(--bg-secondary)', display: 'flex', flexDirection: 'column',
             overflowY: 'auto',
           }}
         >
-          <div style={{ padding: '16px', flex: 1 }}>
-            {/* Add fields */}
-            <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
-              Agregar campo
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              {FIELD_TYPES.map((ft) => (
-                <button
-                  key={ft.type}
-                  onClick={() => addFieldAndClose(ft.type)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    width: '100%', textAlign: 'left', borderRadius: '8px',
-                    padding: '8px 10px', fontSize: '13px', color: 'var(--text-secondary)',
-                    background: 'transparent', border: 'none', cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget;
-                    el.style.background = 'var(--bg-elevated)';
-                    el.style.color = 'var(--text-primary)';
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget;
-                    el.style.background = 'transparent';
-                    el.style.color = 'var(--text-secondary)';
-                  }}
-                >
-                  <span style={{
-                    width: '22px', height: '22px', borderRadius: '6px',
-                    background: 'var(--bg-elevated)', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center',
-                    color: 'var(--accent)', flexShrink: 0,
-                  }}>
-                    <FieldIcon path={ft.iconPath} />
-                  </span>
-                  {ft.label}
-                </button>
-              ))}
-            </div>
-
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
-
-            {/* Settings */}
-            <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>
-              Ajustes del formulario
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div className="field-group">
-                <label className="label">Descripción</label>
-                <textarea className="textarea" style={{ minHeight: '64px', fontSize: '12px' }} value={store.description} onChange={(e) => store.setDescription(e.target.value)} placeholder="Descripción opcional..." />
+          <div style={{ padding: '0', flex: 1 }}>
+            
+            {/* SECTION: FIELDS */}
+            <SidebarSection 
+              title="Preguntas" 
+              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>}
+              isOpen={openSections.fields} 
+              onToggle={() => toggleSection('fields')}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                {FIELD_TYPES.map((ft) => (
+                  <button
+                    key={ft.type}
+                    onClick={() => addFieldAndClose(ft.type)}
+                    className="sidebar-item"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      width: '100%', textAlign: 'left', borderRadius: '8px',
+                      padding: '8px 10px', fontSize: '13px', color: 'var(--text-secondary)',
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <span style={{
+                      width: '22px', height: '22px', borderRadius: '6px',
+                      background: 'var(--bg-elevated)', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center',
+                      color: 'var(--accent)', flexShrink: 0,
+                    }}>
+                      <FieldIcon path={ft.iconPath} />
+                    </span>
+                    {ft.label}
+                  </button>
+                ))}
               </div>
+            </SidebarSection>
 
-              {/* Toggle: Público */}
-              <ToggleRow label="Formulario público" value={store.isPublic} onChange={() => store.setIsPublic(!store.isPublic)} />
-
-              {!store.isPublic && (
+            {/* SECTION: GENERAL SETTINGS */}
+            <SidebarSection 
+              title="Configuración" 
+              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>}
+              isOpen={openSections.general} 
+              onToggle={() => toggleSection('general')}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div className="field-group">
-                  <label className="label">Código de acceso</label>
-                  <input className="input" style={{ fontSize: '12px' }} value={store.accessCode} onChange={(e) => store.setAccessCode(e.target.value)} placeholder="ej: khipu2025" />
+                  <label className="label">Descripción</label>
+                  <textarea className="textarea" style={{ minHeight: '60px', fontSize: '12px' }} value={store.description} onChange={(e) => store.setDescription(e.target.value)} placeholder="Descripción opcional..." />
                 </div>
-              )}
-
-              {/* Toggle: Requerir email */}
-              <ToggleRow
-                label="Requerir email"
-                description="Evita respuestas duplicadas"
-                value={store.requireEmail ?? false}
-                onChange={() => store.setRequireEmail(!(store.requireEmail ?? false))}
-              />
-
-              {/* Toggle: Modo quiz */}
-              <ToggleRow
-                label="Modo Quiz"
-                description="Califica respuestas automáticamente"
-                value={store.isQuiz ?? false}
-                onChange={() => store.setIsQuiz(!(store.isQuiz ?? false))}
-                accent
-              />
-
-              {store.isQuiz && (
-                <div className="field-group">
-                  <label className="label">Mensaje al finalizar</label>
-                  <input className="input" style={{ fontSize: '12px' }} value={store.quizMessage ?? ''} onChange={(e) => store.setQuizMessage(e.target.value)} placeholder="¡Gracias por participar!" />
-                </div>
-              )}
-
-              {/* Toggle: Show Hints */}
-              <ToggleRow
-                label="💡 Habilitar pistas de ayuda"
-                description="Muestra pistas opcionales antes de responder"
-                value={store.showHints}
-                onChange={() => store.setShowHints(!store.showHints)}
-              />
-              {/* Toggle: Gamification */}
-              <ToggleRow
-                label="🎮 Activar Gamificación"
-                description="Muestra vidas, puntos y rachas"
-                value={store.gamification}
-                onChange={() => store.setGamification(!store.gamification)}
-              />
-
-              {store.gamification && (
-                <div className="field-group animate-fade-in" style={{ padding: '0 12px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', marginTop: '-12px', marginBottom: '16px' }}>
-                  <label className="label" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Vidas iniciales</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <input 
-                      type="range" min="1" max="10" 
-                      value={store.initialLives} 
-                      onChange={(e) => store.setInitialLives(parseInt(e.target.value))}
-                      style={{ flex: 1, accentColor: 'var(--accent)' }}
-                    />
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'white', width: '24px' }}>{store.initialLives}</span>
+                <ToggleRow label="Formulario público" value={store.isPublic} onChange={() => store.setIsPublic(!store.isPublic)} />
+                {!store.isPublic && (
+                  <div className="field-group">
+                    <label className="label">Código de acceso</label>
+                    <input className="input" style={{ fontSize: '12px' }} value={store.accessCode} onChange={(e) => store.setAccessCode(e.target.value)} placeholder="ej: khipu2025" />
                   </div>
-                </div>
-              )}              {/* Informed Consent */}
-              <div className="field-group">
-                <label className="label">Consentimiento Informado (Investigadores)</label>
-                <textarea
-                  className="textarea"
-                  style={{ minHeight: '64px', fontSize: '12px' }}
-                  value={store.informedConsent}
-                  onChange={(e) => store.setInformedConsent(e.target.value)}
-                  placeholder="Texto legal que el usuario debe aceptar..."
-                />
+                )}
+                <ToggleRow label="Requerir email" value={store.requireEmail ?? false} onChange={() => store.setRequireEmail(!(store.requireEmail ?? false))} />
+                <ToggleRow label="Modo Quiz" value={store.isQuiz ?? false} onChange={() => store.setIsQuiz(!(store.isQuiz ?? false))} accent />
+                {store.isQuiz && (
+                  <div className="field-group">
+                    <label className="label">Mensaje final</label>
+                    <input className="input" style={{ fontSize: '12px' }} value={store.quizMessage ?? ''} onChange={(e) => store.setQuizMessage(e.target.value)} placeholder="¡Gracias por participar!" />
+                  </div>
+                )}
               </div>
+            </SidebarSection>
 
-              {/* Presentation Mode Picker */}
-              <div className="field-group">
-                <label className="label">🎨 Modo de presentación</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {([
-                    { value: 'classic', icon: '📋', title: 'Modo Clásico', desc: 'Vista tradicional de lista' },
-                    { value: 'cards',   icon: '🃏', title: 'Modo Secuencial', desc: 'Una pregunta a la vez' },
-                    { value: 'duolingo',icon: '🎮', title: 'Modo Interactivo Pro', desc: 'Gamificado con feedback y vidas' },
-                  ] as const).map((mode) => (
-                    <div
-                      key={mode.value}
-                      onClick={() => store.setPresentationMode(mode.value)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '10px',
-                        padding: '10px 12px', borderRadius: '10px', cursor: 'pointer',
-                        border: `1.5px solid ${store.presentationMode === mode.value ? 'var(--accent)' : 'var(--border)'}`,
-                        background: store.presentationMode === mode.value ? 'var(--accent-dim)' : 'var(--bg-elevated)',
-                        transition: 'all 0.15s',
-                      }}
-                    >
-                      <span style={{ fontSize: '18px', flexShrink: 0 }}>{mode.icon}</span>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: '12px', fontWeight: '600', color: store.presentationMode === mode.value ? 'var(--accent)' : 'var(--text-primary)', margin: 0 }}>{mode.title}</p>
-                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>{mode.desc}</p>
-                      </div>
-                      {store.presentationMode === mode.value && (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                      )}
-                    </div>
-                  ))}
-                </div>
+            {/* SECTION: GAMIFICATION & HINTS */}
+            <SidebarSection 
+              title="Gamificación" 
+              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6M18 9h1.5a2.5 2.5 0 000-5H18M4 22h16M10 14.66V17M14 14.66V17M18 9.23V11a6 6 0 01-12 0V9.23A6 6 0 0118 9.23z"/></svg>}
+              isOpen={openSections.gamification} 
+              onToggle={() => toggleSection('gamification')}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <ToggleRow label="Pistas de ayuda" value={store.showHints} onChange={() => store.setShowHints(!store.showHints)} />
+                <ToggleRow label="Activar Game Mode" value={store.gamification} onChange={() => store.setGamification(!store.gamification)} />
+                {store.gamification && (
+                  <div className="field-group" style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                    <label className="label" style={{ fontSize: '11px' }}>Vidas: {store.initialLives}</label>
+                    <input type="range" min="1" max="10" value={store.initialLives} onChange={(e) => store.setInitialLives(parseInt(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent)' }} />
+                  </div>
+                )}
               </div>
-            </div>
+            </SidebarSection>
+
+            {/* SECTION: PRESENTATION MODES */}
+            <SidebarSection 
+              title="Apariencia" 
+              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
+              isOpen={openSections.presentation} 
+              onToggle={() => toggleSection('presentation')}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {([
+                  { value: 'classic', icon: '📋', title: 'Clásico' },
+                  { value: 'cards',   icon: '🃏', title: 'Tarjetas' },
+                  { value: 'duolingo',icon: '🎮', title: 'Interactivo' },
+                ] as const).map((mode) => (
+                  <div
+                    key={mode.value}
+                    onClick={() => store.setPresentationMode(mode.value)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 10px', borderRadius: '8px', cursor: 'pointer',
+                      border: `1px solid ${store.presentationMode === mode.value ? 'var(--accent)' : 'transparent'}`,
+                      background: store.presentationMode === mode.value ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                      transition: 'all 0.1s',
+                    }}
+                  >
+                    <span style={{ fontSize: '14px' }}>{mode.icon}</span>
+                    <span style={{ fontSize: '12px', fontWeight: '500', color: store.presentationMode === mode.value ? 'var(--accent)' : 'var(--text-primary)' }}>{mode.title}</span>
+                  </div>
+                ))}
+              </div>
+            </SidebarSection>
+
+            {/* SECTION: LEGAL */}
+            <SidebarSection 
+              title="Privacidad" 
+              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>}
+              isOpen={openSections.legal} 
+              onToggle={() => toggleSection('legal')}
+            >
+              <div className="field-group">
+                <label className="label">Consentimiento legal</label>
+                <textarea className="textarea" style={{ minHeight: '60px', fontSize: '12px' }} value={store.informedConsent} onChange={(e) => store.setInformedConsent(e.target.value)} placeholder="Texto legal..." />
+              </div>
+            </SidebarSection>
+          </div>
+        </aside>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
             <Link
@@ -787,16 +762,68 @@ function FieldCard({
   );
 }
 
+function SidebarSection({ title, icon, isOpen, onToggle, children }: { title: string; icon: React.ReactNode; isOpen: boolean; onToggle: () => void; children: React.ReactNode }) {
+  return (
+    <div style={{ borderBottom: '1px solid var(--border)' }}>
+      <button
+        onClick={onToggle}
+        style={{
+          width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', background: isOpen ? 'rgba(255,255,255,0.02)' : 'transparent',
+          border: 'none', cursor: 'pointer', color: 'var(--text-primary)', transition: 'all 0.2s'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ color: 'var(--text-muted)' }}>{icon}</span>
+          <span style={{ fontSize: '12px', fontWeight: '700', letterSpacing: '0.02em' }}>{title}</span>
+        </div>
+        <svg 
+          width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          style={{ transform: isOpen ? 'rotate(0)' : 'rotate(-90deg)', transition: 'transform 0.3s ease', opacity: 0.5 }}
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+      {isOpen && (
+        <div style={{ padding: '0 12px 16px', animation: 'slideDown 0.3s ease-out' }}>
+          {children}
+        </div>
+      )}
+      <style>{`
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .sidebar-item:hover {
+          background: var(--bg-elevated) !important;
+          color: var(--text-primary) !important;
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function ToggleRow({ label, description, value, onChange, accent }: { label: string; description?: string; value: boolean; onChange: () => void; accent?: boolean }) {
   return (
-    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }}>
-      <div onClick={onChange} style={{ position: 'relative', width: '36px', height: '20px', borderRadius: '10px', transition: 'background 0.2s', background: value ? (accent ? 'var(--accent)' : 'var(--accent)') : 'var(--bg-elevated)', border: '1px solid var(--border)', cursor: 'pointer', flexShrink: 0, marginTop: '1px' }}>
-        <div style={{ position: 'absolute', top: '2px', left: '2px', width: '14px', height: '14px', borderRadius: '50%', background: 'white', transition: 'transform 0.2s', transform: value ? 'translateX(16px)' : 'translateX(0)' }} />
+    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>{label}</p>
+        {description && <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: '2px 0 0', lineHeight: '1.3' }}>{description}</p>}
       </div>
-      <div>
-        <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', lineHeight: '1.4' }}>{label}</span>
-        {description && <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{description}</span>}
-      </div>
-    </label>
+      <button
+        onClick={onChange}
+        style={{
+          width: '32px', height: '18px', borderRadius: '20px', flexShrink: 0,
+          background: value ? 'var(--accent)' : 'var(--border)',
+          border: 'none', position: 'relative', cursor: 'pointer', transition: 'all 0.2s',
+          marginTop: '2px'
+        }}
+      >
+        <div style={{
+          width: '12px', height: '12px', borderRadius: '50%', background: 'white',
+          position: 'absolute', top: '3px', left: value ? '17px' : '3px', transition: 'all 0.2s'
+        }} />
+      </button>
+    </div>
   );
 }

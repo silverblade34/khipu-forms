@@ -38,11 +38,19 @@ const TopBar = ({
   maxLives: number;
 }) => (
   <>
-    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.8)', backdropFilter: 'blur(15px)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
-      <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '22px', width: 'auto', flexShrink: 0 }} />
-      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formTitle}</span>
+    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.8)', backdropFilter: 'blur(15px)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', position: 'sticky', top: 0, zIndex: 10 }} className="top-bar-container">
+      <style>{`
+        @media (max-width: 640px) {
+          .top-bar-title { display: none !important; }
+          .top-bar-container { padding: 8px 12px !important; gap: 6px !important; }
+          .gamification-stats { gap: 8px !important; }
+          .timer-box { margin-left: auto !important; }
+        }
+      `}</style>
+      <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '20px', width: 'auto', flexShrink: 0 }} />
+      <span className="top-bar-title" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formTitle}</span>
       {currentMode === 'duolingo' && showGamification && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+        <div className="gamification-stats" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
           <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 12 7.5 12 11C12 11 14.5 10 16 10C17.5 10 19 12.5 19 15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15C5 12 7 9 9 7C9 7 9 11 11 11C11 11 12 2 12 2Z"/></svg>
             {streak}
@@ -64,7 +72,7 @@ const TopBar = ({
         <span style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0 }}>{currentMode === 'classic' ? `${answered}/${total}` : `${currentIndex + 1}/${total}`}</span>
       )}
       {timeLeft !== null && (
-        <div style={{ marginLeft: '12px', padding: '4px 8px', background: timeLeft < 5 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', color: timeLeft < 5 ? '#ef4444' : 'white', fontSize: '12px', fontWeight: '700', border: `1px solid ${timeLeft < 5 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`, transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="timer-box" style={{ marginLeft: '12px', padding: '4px 8px', background: timeLeft < 5 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', color: timeLeft < 5 ? '#ef4444' : 'white', fontSize: '12px', fontWeight: '700', border: `1px solid ${timeLeft < 5 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`, transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '6px', minWidth: '54px', justifyContent: 'center' }}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           0:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
         </div>
@@ -697,7 +705,7 @@ export default function PublicFormPage() {
                          src={feedback.correct ? "/llama-happy.png" : "/llama-sad.png"} 
                          alt="Feedback Mascot" 
                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                         className={feedback.correct ? "animate-bounce" : "animate-shake"}
+                         className={feedback.correct ? "animate-fade-in" : "animate-shake"}
                        />
                        <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: feedback.correct ? '#22c55e' : '#ef4444', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', border: '2px solid #111113' }}>
                          {feedback.correct ? (
