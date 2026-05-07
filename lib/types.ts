@@ -44,6 +44,7 @@ export interface FormField {
   // v2.2
   hint: string | null;
   explanation: string | null;
+  time_limit: number | null;
   order_index: number;
   created_at: string;
 }

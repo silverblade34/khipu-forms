@@ -33,9 +33,16 @@ export default function PublicFormPage() {
   const [lives, setLives] = useState(3);
   const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string | null } | null>(null);
   const [showHint, setShowHint] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [slideDir, setSlideDir] = useState<'left' | 'right'>('right');
 
   useEffect(() => {
+    // Check if already submitted in this browser
+    if (typeof window !== 'undefined' && localStorage.getItem(`khipu_submitted_${formId}`)) {
+      setAlreadySubmitted(true);
+    }
+
     fetch(`/api/public/forms/${formId}`)
       .then((r) => { if (!r.ok) throw new Error('Formulario no encontrado'); return r.json(); })
       .then((d: FormData) => {
@@ -47,6 +54,36 @@ export default function PublicFormPage() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [formId]);
+
+  // Timer logic
+  useEffect(() => {
+    if (!data || submitted || alreadySubmitted || feedback) return;
+    const mode = data.form.presentation_mode;
+    if (mode !== 'cards' && mode !== 'duolingo') return;
+
+    const currentField = data.fields[currentIndex];
+    if (currentField && currentField.time_limit && currentField.time_limit > 0) {
+      setTimeLeft(currentField.time_limit);
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev === null || prev <= 1) {
+            clearInterval(timer);
+            // Auto-advance
+            if (mode === 'duolingo' && currentField.correct_answer) {
+              checkAnswer(currentField.id, ''); // Mark as wrong
+            } else {
+              goNext('right');
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    } else {
+      setTimeLeft(null);
+    }
+  }, [currentIndex, data, feedback, submitted, alreadySubmitted]);
 
   const answered = Object.values(answers).filter((v) => v.trim()).length;
   const total = data?.fields.length ?? 0;
@@ -127,6 +164,7 @@ export default function PublicFormPage() {
       const json = await res.json();
       if (res.ok) {
         setSubmitted(true);
+        localStorage.setItem(`khipu_submitted_${formId}`, 'true');
         if (json.is_quiz && json.show_score && json.score !== undefined) {
           setQuizResult({ score: json.score, max_score: json.max_score, results: json.results ?? {}, quiz_message: json.quiz_message });
         }
@@ -226,6 +264,23 @@ export default function PublicFormPage() {
               </div>
             </div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  if (alreadySubmitted) {
+    return (
+      <div className="public-form-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '24px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '400px' }} className="animate-scale-in">
+          <div style={{ fontSize: '64px', marginBottom: '20px' }}>✅</div>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'white', marginBottom: '12px' }}>Ya has respondido</h2>
+          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6' }}>
+            Este formulario solo permite una respuesta por persona y ya hemos registrado la tuya. ¡Gracias por participar!
+          </p>
+          <div style={{ marginTop: '32px' }}>
+            <a href="/" className="btn btn-secondary" style={{ textDecoration: 'none' }}>Volver al inicio</a>
+          </div>
         </div>
       </div>
     );
@@ -334,6 +389,12 @@ export default function PublicFormPage() {
         )}
         {mode !== 'duolingo' && total > 0 && (
           <span style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0 }}>{mode === 'classic' ? `${answered}/${total}` : `${currentIndex + 1}/${total}`}</span>
+        )}
+        {timeLeft !== null && (
+          <div style={{ marginLeft: '12px', padding: '4px 8px', background: timeLeft < 5 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', color: timeLeft < 5 ? '#ef4444' : 'white', fontSize: '12px', fontWeight: '700', border: `1px solid ${timeLeft < 5 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`, transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            0:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+          </div>
         )}
       </div>
       {/* Progress bar */}
@@ -508,6 +569,7 @@ export default function PublicFormPage() {
 
                 {/* Feedback panel */}
                 {feedback && (
+                  <div className="animate-fade-in">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                       <span style={{ fontSize: '28px' }}>{feedback.correct ? '✅' : '❌'}</span>
                       <div>

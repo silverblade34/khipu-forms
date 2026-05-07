@@ -92,6 +92,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       correct_answer: null,
       hint: null,
       explanation: null,
+      time_limit: 0,
       order_index: fields.length,
       created_at: new Date().toISOString(),
     };

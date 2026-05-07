@@ -578,14 +578,18 @@ function FieldCard({
           </div>
 
           <div className="field-group">
-            <label className="label">📝 Fundamentación / Explicación (después de responder)</label>
-            <textarea
-              className="textarea"
-              style={{ minHeight: '56px', fontSize: '12px' }}
-              value={field.explanation ?? ''}
-              onChange={(e) => onUpdate({ explanation: e.target.value || null })}
-              placeholder="Ej: Se fundamenta en el artículo 4 de la constitución..."
-            />
+            <label className="label">⏱️ Límite de tiempo (segundos)</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                type="number"
+                className="input"
+                style={{ width: '80px' }}
+                value={field.time_limit ?? 0}
+                onChange={(e) => onUpdate({ time_limit: Math.max(0, parseInt(e.target.value) || 0) })}
+                min="0"
+              />
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>segundos (0 = sin límite)</span>
+            </div>
           </div>
         </div>
       )}
