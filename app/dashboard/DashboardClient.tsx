@@ -98,70 +98,95 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
   const [copied, setCopied] = useState<string | null>(null);
   const [shareForm, setShareForm] = useState<Form | null>(null);
   const [activeTab, setActiveTab] = useState<'my-forms' | 'templates'>('my-forms');
+  const [creatingId, setCreatingId] = useState<string | null>(null);
+  const [currentTip, setCurrentTip] = useState(0);
+
+  const tips = [
+    { 
+      title: "Modo Interactivo Pro", 
+      text: "Ideal para exámenes. Muestra una pregunta a la vez con feedback instantáneo y sonidos tipo Duolingo.",
+      highlight: "Gamificación activa"
+    },
+    { 
+      title: "Modo Clásico", 
+      text: "Perfecto para formularios largos o corporativos donde la seriedad y rapidez de llenado son prioridad.",
+      highlight: "Máxima eficiencia"
+    },
+    { 
+      title: "Modo Cards", 
+      text: "La mejor opción para móviles. Cada pregunta es una tarjeta deslizable que evita distracciones.",
+      highlight: "Mobile First"
+    },
+    { 
+      title: "Uso de Pistas", 
+      text: "Puedes configurar 'pistas' en cada pregunta para guiar al usuario sin darle la respuesta directa.",
+      highlight: "Pedagogía pura"
+    }
+  ];
 
   const templates = [
     {
       id: 'template-quiz',
       title: 'Examen de Certificación',
-      description: 'Preguntas con tiempo, pistas y gamificación activa.',
-      icon: '🎯',
+      description: 'Ideal para evaluaciones con tiempo y pistas.',
+      icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
       mode: 'duolingo',
       gamification: true,
       isQuiz: true,
       lives: 3,
       fields: [
-        { label: '¿Cuál es la capital de Francia? (Radio)', type: 'radio', options: ['París', 'Londres', 'Berlín'], correct_answer: 'París', hint: 'Es conocida como la ciudad de la luz.', explanation: 'París ha sido la capital desde el siglo X.' },
-        { label: 'Calcula: 15 x 3 (Casillas)', type: 'checkbox', options: ['45', '30', '60'], correct_answer: '45', hint: 'Suma 15 tres veces.' },
-        { label: 'Define la fotosíntesis (Lista)', type: 'select', options: ['Proceso de plantas', 'Proceso animal', 'Mineral'], correct_answer: 'Proceso de plantas' }
+        { label: '¿Cuál es el elemento químico más abundante en el universo?', type: 'radio', options: ['Hidrógeno', 'Helio', 'Oxígeno', 'Carbono'], correct_answer: 'Hidrógeno', hint: 'Es el primer elemento de la tabla periódica.', explanation: 'El hidrógeno constituye aproximadamente el 75% de la masa elemental del universo.' },
+        { label: 'Identifica los planetas gaseosos del sistema solar', type: 'checkbox', options: ['Júpiter', 'Marte', 'Saturno', 'Tierra'], correct_answer: 'Júpiter,Saturno', hint: 'Son los más grandes y no tienen superficie sólida.' },
+        { label: '¿Quién propuso la teoría de la relatividad?', type: 'select', options: ['Isaac Newton', 'Albert Einstein', 'Stephen Hawking'], correct_answer: 'Albert Einstein' }
       ]
     },
     {
       id: 'template-survey',
       title: 'Encuesta de Satisfacción',
-      description: 'Diseño clásico y formal para recolectar feedback profesional.',
-      icon: '📊',
+      description: 'Recopila feedback con un diseño sobrio.',
+      icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>,
       mode: 'classic',
       gamification: false,
       isQuiz: false,
       fields: [
-        { label: '¿Cómo calificaría nuestra atención? (Lista)', type: 'select', options: ['Excelente', 'Bueno', 'Regular', 'Malo'] },
-        { label: '¿Qué es lo que más le gustó del servicio? (Radio)', type: 'radio', options: ['Rapidez', 'Calidad', 'Precio'] },
-        { label: 'Sugerencias de mejora (Lista)', type: 'textarea' }
+        { label: '¿Cómo calificaría la rapidez de nuestro soporte?', type: 'select', options: ['Excelente', 'Bueno', 'Regular', 'Deficiente'] },
+        { label: '¿Recomendaría nuestro servicio a un colega?', type: 'radio', options: ['Totalmente', 'Probablemente', 'No estoy seguro', 'No'] },
+        { label: '¿Qué funcionalidad añadiría en la próxima versión?', type: 'textarea' }
       ]
     },
     {
       id: 'template-leads',
-      title: 'Registro de Evento',
-      description: 'Experiencia fluida paso a paso ideal para móviles.',
-      icon: '🚀',
+      title: 'Captura de Leads',
+      description: 'Optimizado para conversiones rápidas.',
+      icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
       mode: 'cards',
       gamification: false,
       isQuiz: false,
       fields: [
-        { label: 'Nombre completo (Lista)', type: 'text', required: true },
-        { label: 'Correo electrónico (Lista)', type: 'email', required: true },
-        { label: '¿Cómo se enteró de nosotros? (Radio)', type: 'radio', options: ['Redes Sociales', 'Amigos', 'Publicidad'] }
+        { label: 'Nombre y Apellido', type: 'text', required: true },
+        { label: 'Correo corporativo', type: 'email', required: true },
+        { label: 'Tamaño de su equipo', type: 'radio', options: ['1-10', '11-50', '50+'] }
       ]
     },
     {
       id: 'template-trivia',
-      title: 'Trivia de Cultura Pop',
-      description: 'Pura diversión con rachas, puntos y nuestra mascota.',
-      icon: '🎮',
+      title: 'Trivia de Cultura',
+      description: 'Engagement máximo con rachas y puntos.',
+      icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4"/><circle cx="15" cy="10" r="1"/><circle cx="15" cy="14" r="1"/><circle cx="18" cy="12" r="1"/></svg>,
       mode: 'duolingo',
       gamification: true,
       isQuiz: true,
       lives: 5,
       fields: [
-        { label: '¿En qué año se lanzó el primer iPhone? (Radio)', type: 'radio', options: ['2007', '2005', '2010'], correct_answer: '2007', hint: 'Fue presentado por Steve Jobs.', explanation: 'El iPhone cambió la telefonía en junio de 2007.' },
-        { label: 'Personajes de Star Wars (Casillas)', type: 'checkbox', options: ['Luke Skywalker', 'Batman', 'Darth Vader'], correct_answer: 'Luke Skywalker,Darth Vader' }
+        { label: '¿En qué ciudad se encuentran los Jardines Colgantes?', type: 'radio', options: ['Babilonia', 'Roma', 'Atenas'], correct_answer: 'Babilonia', hint: 'Fue una de las 7 maravillas antiguas.', explanation: 'Babilonia estaba situada en la actual Irak.' },
+        { label: 'Inventores famosos', type: 'checkbox', options: ['Nikola Tesla', 'Leonardo da Vinci', 'Steve Jobs', 'Batman'], correct_answer: 'Nikola Tesla,Leonardo da Vinci' }
       ]
     }
   ];
 
   async function handleCreateFromTemplate(template: any) {
-    if (creating) return;
-    setCreating(true);
+    if (creatingId) return;
+    setCreatingId(template.id);
     try {
       const res = await fetch('/api/forms', {
         method: 'POST',
@@ -176,19 +201,19 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       });
       const form = await res.json();
       
-      // Add fields
-      for (const field of template.fields) {
-        await fetch(`/api/forms/${form.id}/fields`, {
+      // Add fields in parallel for speed
+      await Promise.all(template.fields.map((field: any) => 
+        fetch(`/api/forms/${form.id}/fields`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(field),
-        });
-      }
+        })
+      ));
       
       router.push(`/builder/${form.id}`);
     } catch (e) {
       console.error(e);
-      setCreating(false);
+      setCreatingId(null);
     }
   }
 
@@ -317,7 +342,13 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
   const userInitial = isGuest ? null : (user.name?.[0] || user.email[0]).toUpperCase();
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'var(--bg-primary)', 
+      backgroundImage: 'radial-gradient(circle at top right, rgba(124,106,247,0.06), transparent 800px), radial-gradient(circle at bottom left, rgba(124,106,247,0.03), transparent 600px)',
+      display: 'flex', 
+      flexDirection: 'column' 
+    }}>
       <ShareModal />
       <DeleteModal />
       {/* Top nav */}
@@ -428,24 +459,72 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
 
         {activeTab === 'templates' ? (
           <div className="animate-fade-in">
-            <div style={{ marginBottom: '32px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'white', marginBottom: '8px', letterSpacing: '-0.02em' }}>Galería de Plantillas</h2>
-              <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Selecciona una base para empezar a crear tu formulario profesional en segundos.</p>
+            <div style={{ display: 'flex', gap: '32px', marginBottom: '40px', alignItems: 'center', flexWrap: 'wrap-reverse' }}>
+              <div style={{ flex: 1, minWidth: '280px' }}>
+                <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'white', marginBottom: '8px', letterSpacing: '-0.02em' }}>Galería de Plantillas</h2>
+                <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>Sube de nivel tus formularios con estructuras prediseñadas por expertos.</p>
+              </div>
+              
+              {/* Educational Chalkboard Section */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', flex: '1.2', minWidth: '340px' }}>
+                <div style={{ width: '110px', height: '110px', flexShrink: 0, position: 'relative' }}>
+                  <img src="/llama-teacher.png" alt="Llama Teacher" style={{ width: '100%', height: '100%', objectFit: 'contain' }} className="animate-bounce-slow" />
+                </div>
+                
+                <div style={{ 
+                  flex: 1, 
+                  background: '#1a3c34', // Chalkboard Green
+                  border: '8px solid #4a3728', // Wood Frame
+                  borderRadius: '12px',
+                  padding: '16px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.3), inset 0 0 40px rgba(0,0,0,0.2)',
+                  position: 'relative',
+                  minHeight: '130px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center'
+                }}>
+                  {/* Chalk effect overlay */}
+                  <div style={{ position: 'absolute', inset: 0, opacity: 0.1, pointerEvents: 'none', background: 'url("https://www.transparenttextures.com/patterns/Chalkboard.png")' }} />
+                  
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: '900', color: '#ffeb3b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Khipu Lessons</span>
+                      <span style={{ fontSize: '9px', padding: '2px 6px', background: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '4px' }}>{currentTip + 1}/{tips.length}</span>
+                    </div>
+                    <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'white', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>{tips[currentTip].title}</h4>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.5', margin: 0 }}>{tips[currentTip].text}</p>
+                    <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '10px', color: '#8bc34a', fontWeight: '700' }}>#{tips[currentTip].highlight}</span>
+                      <button 
+                        onClick={() => setCurrentTip((currentTip + 1) % tips.length)} 
+                        style={{ background: 'white', color: '#1a3c34', border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '10px', fontWeight: '800', cursor: 'pointer', transition: 'transform 0.2s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                      >
+                        Siguiente →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
               {templates.map((template) => (
-                <div key={template.id} className="public-form-card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', height: '100%', transition: 'all 0.3s', cursor: 'default', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
-                  <div style={{ fontSize: '40px', marginBottom: '20px' }}>{template.icon}</div>
-                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'white', marginBottom: '10px' }}>{template.title}</h3>
-                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6', flex: 1, marginBottom: '28px' }}>{template.description}</p>
+                <div key={template.id} className="public-form-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%', transition: 'all 0.3s', cursor: 'default', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px' }}>
+                  <div style={{ color: 'var(--accent)', marginBottom: '16px', background: 'rgba(124,106,247,0.1)', width: '56px', height: '56px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {template.icon}
+                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'white', marginBottom: '8px' }}>{template.title}</h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5', flex: 1, marginBottom: '24px' }}>{template.description}</p>
                   <button 
                     onClick={() => handleCreateFromTemplate(template)}
-                    disabled={creating}
+                    disabled={!!creatingId}
                     className="btn btn-primary" 
-                    style={{ width: '100%', height: '44px', fontSize: '14px', borderRadius: '12px', fontWeight: '700' }}
+                    style={{ width: '100%', height: '40px', fontSize: '13px', borderRadius: '12px', fontWeight: '700' }}
                   >
-                    {creating ? <IconSpinner /> : 'Usar esta plantilla'}
+                    {creatingId === template.id ? <IconSpinner /> : 'Usar esta plantilla'}
                   </button>
                 </div>
               ))}
