@@ -307,33 +307,33 @@ export default function PublicFormPage() {
         </div>
       )}
 
-      <div style={{ maxWidth: '680px', width: '100%', margin: '0 auto', padding: '60px 20px 100px', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: '640px', width: '100%', margin: '0 auto', padding: '40px 20px 80px', position: 'relative', zIndex: 1 }}>
         {/* Form header card (only show at start or in normal mode) */}
         {(!data.form.step_by_step || currentIndex === 0) && (
-          <div style={{ marginBottom: '40px', padding: '0 10px' }} className="animate-fade-in">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+          <div style={{ marginBottom: '32px', padding: '0 8px' }} className="animate-fade-in">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
               {data.form.is_quiz && (
-                <span className="badge badge-purple" style={{ padding: '4px 10px' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '4px' }}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+                <span className="badge badge-purple" style={{ padding: '3px 8px', fontSize: '11px' }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '4px' }}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
                   Cuestionario
                 </span>
               )}
-              <div className="time-badge">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <div className="time-badge" style={{ fontSize: '10px' }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 ~{Math.max(1, Math.ceil(total * 0.5))} min de lectura
               </div>
             </div>
             
-            <h1 style={{ fontSize: '36px', fontWeight: '800', color: 'white', letterSpacing: '-0.04em', lineHeight: '1.1', marginBottom: '16px' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: '800', color: 'white', letterSpacing: '-0.03em', lineHeight: '1.2', marginBottom: '12px' }}>
               {data.form.title}
             </h1>
             {data.form.description && (
-              <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '20px' }}>{data.form.description}</p>
+              <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6', marginBottom: '16px' }}>{data.form.description}</p>
             )}
             
             {data.form.require_email && respondentEmail && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
                 Respondiendo como <span style={{ color: 'white' }}>{respondentEmail}</span>
               </div>
             )}
@@ -341,7 +341,7 @@ export default function PublicFormPage() {
         )}
 
         {/* Fields */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {data.form.step_by_step ? (
             // Step-by-Step Mode
             <div key={data.fields[currentIndex].id} className="animate-scale-in">
@@ -354,18 +354,18 @@ export default function PublicFormPage() {
                 }} 
                 error={validationErrors[data.fields[currentIndex].id]} 
               />
-              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
                 {currentIndex > 0 && (
-                  <button type="button" onClick={prevStep} className="btn btn-secondary" style={{ height: '50px', flex: 1, borderRadius: '14px' }}>
+                  <button type="button" onClick={prevStep} className="btn btn-secondary" style={{ height: '46px', flex: 1, borderRadius: '12px', fontSize: '14px' }}>
                     Atrás
                   </button>
                 )}
                 {currentIndex < total - 1 ? (
-                  <button type="button" onClick={nextStep} className="btn btn-primary" style={{ height: '50px', flex: 2, borderRadius: '14px', fontWeight: '700' }}>
+                  <button type="button" onClick={nextStep} className="btn btn-primary" style={{ height: '46px', flex: 2, borderRadius: '12px', fontWeight: '700', fontSize: '14px' }}>
                     Siguiente →
                   </button>
                 ) : (
-                  <button type="submit" disabled={submitting} className="btn btn-primary" style={{ height: '50px', flex: 2, borderRadius: '14px', fontWeight: '700' }}>
+                  <button type="submit" disabled={submitting} className="btn btn-primary" style={{ height: '46px', flex: 2, borderRadius: '12px', fontWeight: '700', fontSize: '14px' }}>
                     {submitting ? 'Enviando...' : 'Finalizar y Enviar'}
                   </button>
                 )}
@@ -379,10 +379,10 @@ export default function PublicFormPage() {
                   <FieldRenderer field={field} value={answers[field.id] || ''} onChange={(val) => { setAnswers({ ...answers, [field.id]: val }); if (validationErrors[field.id]) setValidationErrors({ ...validationErrors, [field.id]: '' }); }} error={validationErrors[field.id]} />
                 </div>
               ))}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: '20px', flexDirection: 'column', gap: '20px' }}>
-                <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width: '100%', height: '54px', fontSize: '16px', fontWeight: '700', borderRadius: '16px', boxShadow: '0 10px 25px rgba(124,106,247,0.3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: '16px', flexDirection: 'column', gap: '16px' }}>
+                <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width: '100%', height: '48px', fontSize: '15px', fontWeight: '700', borderRadius: '14px', boxShadow: '0 8px 20px rgba(124,106,247,0.2)' }}>
                   {submitting ? (
-                    <><span style={{ width: '18px', height: '18px', border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite', marginRight: '10px' }} /> Enviando...</>
+                    <><span style={{ width: '16px', height: '16px', border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite', marginRight: '10px' }} /> Enviando...</>
                   ) : (data.form.is_quiz ? '🎯 Finalizar Cuestionario' : 'Enviar respuesta →')}
                 </button>
               </div>
@@ -390,14 +390,14 @@ export default function PublicFormPage() {
           )}
 
           {error && (
-            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px', padding: '16px', fontSize: '14px', color: '#ef4444', textAlign: 'center' }}>
+            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#ef4444', textAlign: 'center' }}>
               {error}
             </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '20px', opacity: 0.5, gap: '8px' }}>
-            <span style={{ fontSize: '12px' }}>Potenciado por</span>
-            <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '16px', width: 'auto' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '16px', opacity: 0.4, gap: '6px' }}>
+            <span style={{ fontSize: '11px' }}>Potenciado por</span>
+            <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '14px', width: 'auto' }} />
           </div>
         </form>
       </div>
@@ -410,13 +410,13 @@ function FieldRenderer({ field, value, onChange, error }: {
 }) {
   return (
     <div className="field-card">
-      <label style={{ display: 'block', fontSize: '16px', fontWeight: '600', color: 'white', marginBottom: '16px', lineHeight: '1.4' }}>
+      <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: 'white', marginBottom: '12px', lineHeight: '1.4' }}>
         {field.label}
-        {field.required && <span style={{ color: '#ef4444', marginLeft: '6px' }}>*</span>}
+        {field.required && <span style={{ color: '#ef4444', marginLeft: '4px' }}>*</span>}
       </label>
 
       {field.type === 'text' && <input className="input glass-input" type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={`Escribe aquí...`} />}
-      {field.type === 'textarea' && <textarea className="textarea glass-input" style={{ minHeight: '120px', paddingTop: '14px' }} value={value} onChange={(e) => onChange(e.target.value)} placeholder="Escribe tu respuesta detallada..." />}
+      {field.type === 'textarea' && <textarea className="textarea glass-input" style={{ minHeight: '100px', paddingTop: '12px' }} value={value} onChange={(e) => onChange(e.target.value)} placeholder="Escribe tu respuesta detallada..." />}
       {field.type === 'email' && <input className="input glass-input" type="email" value={value} onChange={(e) => onChange(e.target.value)} placeholder="correo@ejemplo.com" />}
       {field.type === 'number' && <input className="input glass-input" type="number" value={value} onChange={(e) => onChange(e.target.value)} placeholder="0" />}
 
@@ -428,28 +428,29 @@ function FieldRenderer({ field, value, onChange, error }: {
       )}
 
       {field.type === 'radio' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {field.options.map((opt) => (
-            <div key={opt} className={`radio-option${value === opt ? ' selected' : ''}`} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px 18px' }} onClick={() => onChange(opt)}>
-              <div className="radio-dot" />
-              <span style={{ fontSize: '15px' }}>{opt}</span>
+            <div key={opt} className={`radio-option${value === opt ? ' selected' : ''}`} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '12px 16px' }} onClick={() => onChange(opt)}>
+              <div className="radio-dot" style={{ width: '14px', height: '14px' }} />
+              <span style={{ fontSize: '14px' }}>{opt}</span>
             </div>
           ))}
         </div>
       )}
 
       {field.type === 'checkbox' && (
-        <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <input type="checkbox" checked={value === 'true'} onChange={(e) => onChange(e.target.checked ? 'true' : 'false')} style={{ width: '20px', height: '20px', accentColor: 'var(--accent)', cursor: 'pointer' }} />
-          <span style={{ fontSize: '15px', color: 'rgba(255,255,255,0.8)' }}>Confirmar selección</span>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <input type="checkbox" checked={value === 'true'} onChange={(e) => onChange(e.target.checked ? 'true' : 'false')} style={{ width: '18px', height: '18px', accentColor: 'var(--accent)', cursor: 'pointer' }} />
+          <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>Confirmar selección</span>
         </label>
       )}
 
-      {error && <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {error && <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         {error}
       </p>}
     </div>
   );
 }
+
 
