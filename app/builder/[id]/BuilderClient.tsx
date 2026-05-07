@@ -543,6 +543,7 @@ function FieldCard({
   onMoveUp: () => void;
   onMoveDown: () => void;
 }) {
+  const store = useBuilderStore();
   const ft = FIELD_TYPES.find((t) => t.type === field.type);
 
   return (
@@ -616,7 +617,6 @@ function FieldCard({
                 {field.options.map((opt, i) => (
                   <div key={i} style={{ display: 'flex', gap: '6px' }}>
                     <input
-                      className="input"
                       style={{ fontSize: '12px' }}
                       value={opt}
                       onChange={(e) => {
