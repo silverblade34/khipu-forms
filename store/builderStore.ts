@@ -91,6 +91,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       options: (type === 'select' || type === 'radio') ? ['Opción 1', 'Opción 2'] : [],
       correct_answer: null,
       hint: null,
+      explanation: null,
       order_index: fields.length,
       created_at: new Date().toISOString(),
     };

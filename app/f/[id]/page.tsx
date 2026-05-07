@@ -27,11 +27,12 @@ export default function PublicFormPage() {
   // v2.1
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  // v2.2 Duolingo mode
+  // v2.2 Gamification
   const [points, setPoints] = useState(0);
   const [streak, setStreak] = useState(0);
   const [lives, setLives] = useState(3);
-  const [feedback, setFeedback] = useState<{ correct: boolean; hint: string | null } | null>(null);
+  const [feedback, setFeedback] = useState<{ correct: boolean; explanation: string | null } | null>(null);
+  const [showHint, setShowHint] = useState<string | null>(null);
   const [slideDir, setSlideDir] = useState<'left' | 'right'>('right');
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export default function PublicFormPage() {
       return;
     }
     const correct = val.trim().toLowerCase() === field.correct_answer.trim().toLowerCase();
-    setFeedback({ correct, hint: field.hint });
+    setFeedback({ correct, explanation: field.explanation });
     if (correct) {
       setPoints(p => p + 10);
       setStreak(s => s + 1);
@@ -395,9 +396,28 @@ export default function PublicFormPage() {
             <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
               {field?.required && '* '}Campo {currentIndex + 1}
             </p>
-            <label style={{ display: 'block', fontSize: '20px', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '24px' }}>
-              {field?.label}
-            </label>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '20px', fontWeight: '700', color: 'white', lineHeight: '1.4' }}>
+                {field?.label}
+              </label>
+              {field?.hint && (
+                <button 
+                  type="button" 
+                  onClick={() => setShowHint(showHint === field.id ? null : field.id)}
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, color: showHint === field.id ? '#fbbf24' : 'rgba(255,255,255,0.4)', transition: 'all 0.2s' }}
+                  title="Ver pista"
+                >
+                  💡
+                </button>
+              )}
+            </div>
+            
+            {showHint === field?.id && field?.hint && (
+              <div className="animate-fade-in" style={{ background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '12px', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: '#fbbf24', lineHeight: '1.5' }}>
+                <strong>Pista:</strong> {field.hint}
+              </div>
+            )}
+
             {field && (
               <FieldRenderer field={field} value={answers[field.id] || ''} onChange={(val) => { setAnswers({ ...answers, [field.id]: val }); if (validationErrors[field.id]) setValidationErrors({ ...validationErrors, [field.id]: '' }); }} error={validationErrors[field.id]} hideLabel />
             )}
@@ -450,9 +470,26 @@ export default function PublicFormPage() {
                   <span style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{currentIndex + 1} / {total}</span>
                   {streak >= 2 && <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', background: 'rgba(245,158,11,0.15)', padding: '3px 10px', borderRadius: '99px' }}>🔥 Racha x{streak}</span>}
                 </div>
-                <label style={{ display: 'block', fontSize: '20px', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '20px' }}>
-                  {field?.label}
-                </label>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontSize: '20px', fontWeight: '700', color: 'white', lineHeight: '1.4' }}>
+                    {field?.label}
+                  </label>
+                  {field?.hint && !feedback && (
+                    <button 
+                      type="button" 
+                      onClick={() => setShowHint(showHint === field.id ? null : field.id)}
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, color: showHint === field.id ? '#fbbf24' : 'rgba(255,255,255,0.4)', transition: 'all 0.2s' }}
+                    >
+                      💡
+                    </button>
+                  )}
+                </div>
+                
+                {showHint === field?.id && field?.hint && !feedback && (
+                  <div className="animate-fade-in" style={{ background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '12px', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: '#fbbf24', lineHeight: '1.5' }}>
+                    <strong>Pista:</strong> {field.hint}
+                  </div>
+                )}
                 {field && !feedback && (
                   <FieldRenderer
                     field={field}
@@ -471,19 +508,19 @@ export default function PublicFormPage() {
 
                 {/* Feedback panel */}
                 {feedback && (
-                  <div className="animate-fade-in">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                       <span style={{ fontSize: '28px' }}>{feedback.correct ? '✅' : '❌'}</span>
                       <div>
-                        <p style={{ fontWeight: '700', fontSize: '15px', color: feedback.correct ? '#22c55e' : '#ef4444', margin: 0 }}>{feedback.correct ? `¡Correcto! +10 puntos` : 'Incorrecto'}</p>
+                        <p style={{ fontWeight: '700', fontSize: '15px', color: feedback.correct ? '#22c55e' : '#ef4444', margin: 0 }}>{feedback.correct ? `¡Correcto! +10 puntos` : 'Respuesta incorrecta'}</p>
                         {!feedback.correct && field?.correct_answer && (
-                          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', margin: 0 }}>Respuesta correcta: <strong style={{ color: 'white' }}>{field.correct_answer}</strong></p>
+                          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', margin: 0 }}>La respuesta correcta es: <strong style={{ color: 'white' }}>{field.correct_answer}</strong></p>
                         )}
                       </div>
                     </div>
-                    {feedback.hint && (
+                    {feedback.explanation && (
                       <div style={{ background: 'rgba(124,106,247,0.1)', border: '1px solid rgba(124,106,247,0.2)', borderRadius: '12px', padding: '12px 16px' }}>
-                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: '1.6' }}>💡 {feedback.hint}</p>
+                        <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Fundamentación</p>
+                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: '1.6' }}>{feedback.explanation}</p>
                       </div>
                     )}
                   </div>

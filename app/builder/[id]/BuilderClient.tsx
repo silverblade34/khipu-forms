@@ -309,8 +309,8 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
 
               {/* Toggle: Step-by-Step */}
               <ToggleRow
-                label="Una pregunta a la vez"
-                description="Estilo Typeform (próximamente)"
+                label="Navegación paso a paso"
+                description="Habilita la transición automática entre campos"
                 value={store.stepByStep}
                 onChange={() => store.setStepByStep(!store.stepByStep)}
               />
@@ -332,9 +332,9 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
                 <label className="label">🎨 Modo de presentación</label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {([
-                    { value: 'classic', emoji: '📋', title: 'Clásico', desc: 'Lista scrollable de preguntas' },
-                    { value: 'cards',   emoji: '🃏', title: 'Tarjetas', desc: 'Una pregunta a la vez, con animación' },
-                    { value: 'duolingo',emoji: '🎮', title: 'Duolingo', desc: 'Gamificado: puntos, vidas y feedback' },
+                    { value: 'classic', emoji: '📋', title: 'Modo Clásico', desc: 'Vista tradicional de lista scrollable' },
+                    { value: 'cards',   emoji: '🃏', title: 'Modo Secuencial', desc: 'Una pregunta a la vez con enfoque total' },
+                    { value: 'duolingo',emoji: '🎮', title: 'Modo Interactivo Pro', desc: 'Gamificado con feedback, puntos y vidas' },
                   ] as const).map((mode) => (
                     <div
                       key={mode.value}
@@ -567,13 +567,24 @@ function FieldCard({
           )}
 
           <div className="field-group">
-            <label className="label">💡 Pista / Dato curioso (modo Duolingo)</label>
+            <label className="label">💡 Pista (antes de responder)</label>
+            <textarea
+              className="textarea"
+              style={{ minHeight: '50px', fontSize: '12px' }}
+              value={field.hint ?? ''}
+              onChange={(e) => onUpdate({ hint: e.target.value || null })}
+              placeholder="Ej: Recuerda que la capital está en la costa..."
+            />
+          </div>
+
+          <div className="field-group">
+            <label className="label">📝 Fundamentación / Explicación (después de responder)</label>
             <textarea
               className="textarea"
               style={{ minHeight: '56px', fontSize: '12px' }}
-              value={field.hint ?? ''}
-              onChange={(e) => onUpdate({ hint: e.target.value || null })}
-              placeholder="Ej: ¡La respuesta correcta es... porque...!"
+              value={field.explanation ?? ''}
+              onChange={(e) => onUpdate({ explanation: e.target.value || null })}
+              placeholder="Ej: Se fundamenta en el artículo 4 de la constitución..."
             />
           </div>
         </div>

@@ -55,6 +55,9 @@ CREATE TABLE IF NOT EXISTS form_fields (
   required BOOLEAN DEFAULT false,
   options JSONB DEFAULT '[]'::jsonb,
   correct_answer TEXT,
+  -- v2.2: per-field hint (before answering) and explanation (after answering)
+  hint TEXT,
+  explanation TEXT,
   order_index INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

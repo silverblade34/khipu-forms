@@ -14,8 +14,8 @@ const features = [
   },
   {
     icon: 'M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.77 3.77z',
-    title: 'Modos Interactivos',
-    desc: 'Elige entre vista Clásica, Tarjetas o modo Duolingo para tus formularios.',
+    title: 'Modos de Presentación',
+    desc: 'Elige entre vista Clásica, Secuencial o Interactivo Pro según tu audiencia.',
   },
   {
     icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
@@ -24,8 +24,8 @@ const features = [
   },
   {
     icon: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z',
-    title: 'Gamificación Duolingo',
-    desc: 'Convierte tus quizes en juegos con puntos, vidas y rachas de aciertos en tiempo real.',
+    title: 'Gamificación Pro',
+    desc: 'Convierte tus quizes en una experiencia viva con puntos, vidas y rachas en tiempo real.',
   },
   {
     icon: 'M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71',
@@ -317,8 +317,8 @@ export default function HomePage() {
             }}>
               {[
                 { title: '📋 Modo Clásico', desc: 'La vista tradicional de lista. Ideal para encuestas de tesis o formularios extensos de investigación.', accent: false },
-                { title: '🃏 Modo Tarjetas', desc: 'Una pregunta a la vez. Reduce la fatiga visual y mejora la tasa de finalización.', accent: false },
-                { title: '🎮 Modo Duolingo', desc: 'Gamificación real: puntos, vidas, rachas y feedback instantáneo. Perfecto para profesores y quizzes.', accent: true },
+                { title: '🃏 Modo Secuencial', desc: 'Una pregunta a la vez. Reduce la fatiga visual, ideal para móviles y aumenta la tasa de respuesta.', accent: false },
+                { title: '🎮 Modo Interactivo Pro', desc: 'Gamificación con puntos, vidas, pistas y fundamentación de respuestas. Perfecto para aprendizaje activo.', accent: true },
               ].map((m) => (
                 <div key={m.title} style={{ 
                   padding: '32px', 

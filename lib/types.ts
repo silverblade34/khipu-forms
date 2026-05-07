@@ -43,6 +43,7 @@ export interface FormField {
   correct_answer: string | null;
   // v2.2
   hint: string | null;
+  explanation: string | null;
   order_index: number;
   created_at: string;
 }
