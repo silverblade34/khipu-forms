@@ -45,6 +45,8 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
     store.setShowScore(form.show_score ?? true);
     store.setQuizMessage(form.quiz_message || '¡Gracias por participar!');
     store.setRequireEmail(form.require_email ?? false);
+    store.setStepByStep(form.step_by_step ?? false);
+    store.setInformedConsent(form.informed_consent || '');
     store.setFields(initialFields);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.id]);
@@ -65,6 +67,8 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
           show_score: store.showScore,
           quiz_message: store.quizMessage || null,
           require_email: store.requireEmail,
+          step_by_step: store.stepByStep,
+          informed_consent: store.informedConsent || null,
         }),
       });
       await fetch(`/api/forms/${form.id}/fields`, {
@@ -300,6 +304,26 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
                   <input className="input" style={{ fontSize: '12px' }} value={store.quizMessage ?? ''} onChange={(e) => store.setQuizMessage(e.target.value)} placeholder="¡Gracias por participar!" />
                 </div>
               )}
+
+              {/* Toggle: Step-by-Step */}
+              <ToggleRow
+                label="Una pregunta a la vez"
+                description="Estilo Typeform (próximamente)"
+                value={store.stepByStep}
+                onChange={() => store.setStepByStep(!store.stepByStep)}
+              />
+
+              {/* Informed Consent */}
+              <div className="field-group">
+                <label className="label">Consentimiento Informado (Investigadores)</label>
+                <textarea
+                  className="textarea"
+                  style={{ minHeight: '64px', fontSize: '12px' }}
+                  value={store.informedConsent}
+                  onChange={(e) => store.setInformedConsent(e.target.value)}
+                  placeholder="Texto legal que el usuario debe aceptar..."
+                />
+              </div>
             </div>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />

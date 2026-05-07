@@ -35,6 +35,9 @@ CREATE TABLE IF NOT EXISTS forms (
   quiz_message TEXT DEFAULT '¡Gracias por participar!',
   -- Anti-duplicate email gate
   require_email BOOLEAN DEFAULT false,
+  -- v2.1 New features
+  step_by_step BOOLEAN DEFAULT false,
+  informed_consent TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -112,6 +115,13 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='forms' AND column_name='require_email') THEN
     ALTER TABLE forms ADD COLUMN require_email BOOLEAN DEFAULT false;
+  END IF;
+  -- v2.1 New features
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='forms' AND column_name='step_by_step') THEN
+    ALTER TABLE forms ADD COLUMN step_by_step BOOLEAN DEFAULT false;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='forms' AND column_name='informed_consent') THEN
+    ALTER TABLE forms ADD COLUMN informed_consent TEXT;
   END IF;
   -- form_fields table
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='form_fields' AND column_name='correct_answer') THEN

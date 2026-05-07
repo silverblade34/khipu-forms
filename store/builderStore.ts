@@ -14,6 +14,8 @@ interface BuilderState {
   showScore: boolean;
   quizMessage: string;
   requireEmail: boolean;
+  stepByStep: boolean;
+  informedConsent: string;
   fields: FormField[];
   isDirty: boolean;
   isSaving: boolean;
@@ -28,6 +30,8 @@ interface BuilderState {
   setShowScore: (v: boolean) => void;
   setQuizMessage: (v: string) => void;
   setRequireEmail: (v: boolean) => void;
+  setStepByStep: (v: boolean) => void;
+  setInformedConsent: (v: string) => void;
   setFields: (fields: FormField[]) => void;
   addField: (type: FormField['type']) => void;
   removeField: (id: string) => void;
@@ -49,6 +53,8 @@ const initialState = {
   showScore: true,
   quizMessage: '¡Gracias por participar!',
   requireEmail: false,
+  stepByStep: false,
+  informedConsent: '',
   fields: [],
   isDirty: false,
   isSaving: false,
@@ -66,6 +72,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setShowScore: (showScore) => set({ showScore, isDirty: true }),
   setQuizMessage: (quizMessage) => set({ quizMessage, isDirty: true }),
   setRequireEmail: (requireEmail) => set({ requireEmail, isDirty: true }),
+  setStepByStep: (stepByStep) => set({ stepByStep, isDirty: true }),
+  setInformedConsent: (informedConsent) => set({ informedConsent, isDirty: true }),
   setFields: (fields) => set({ fields, isDirty: false }),
 
   addField: (type) => {

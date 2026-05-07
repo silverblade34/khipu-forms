@@ -24,6 +24,10 @@ export default function PublicFormPage() {
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
+  // v2.1
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   useEffect(() => {
     fetch(`/api/public/forms/${formId}`)
       .then((r) => { if (!r.ok) throw new Error('Formulario no encontrado'); return r.json(); })
@@ -31,6 +35,7 @@ export default function PublicFormPage() {
         setData(d);
         if (!d.form.access_code) setAccessGranted(true);
         if (!d.form.require_email) setEmailGranted(true);
+        if (!d.form.informed_consent) setConsentAccepted(true);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -39,6 +44,22 @@ export default function PublicFormPage() {
   const answered = Object.values(answers).filter((v) => v.trim()).length;
   const total = data?.fields.length ?? 0;
   const progress = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+  // Navigation for step-by-step
+  const nextStep = () => {
+    if (!data) return;
+    const currentField = data.fields[currentIndex];
+    const val = answers[currentField.id] || '';
+    if (currentField.required && !val.trim()) {
+      setValidationErrors({ ...validationErrors, [currentField.id]: 'Este campo es obligatorio' });
+      return;
+    }
+    if (currentIndex < total - 1) setCurrentIndex(currentIndex + 1);
+  };
+
+  const prevStep = () => {
+    if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
+  };
 
   function checkAccessCode() {
     if (accessCode === data?.form.access_code) { setAccessGranted(true); setError(null); }
@@ -209,6 +230,7 @@ export default function PublicFormPage() {
   // Email gate
   if (!emailGranted && data?.form.require_email) return (
     <div className="public-form-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '24px' }}>
+      <div className="mesh-gradient" />
       <div style={{ width: '100%', maxWidth: '400px' }} className="animate-fade-in">
         <div className="public-form-card">
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
@@ -222,13 +244,43 @@ export default function PublicFormPage() {
           {error && <p style={{ fontSize: '13px', color: 'var(--error)', background: 'var(--error-dim)', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px' }}>{error}</p>}
           <div className="field-group" style={{ marginBottom: '16px' }}>
             <label className="label">Tu correo electrónico</label>
-            <input className="input" type="email" value={respondentEmail} onChange={(e) => setRespondentEmail(e.target.value)} placeholder="correo@ejemplo.com" onKeyDown={(e) => e.key === 'Enter' && submitEmail()} />
+            <input className="input glass-input" type="email" value={respondentEmail} onChange={(e) => setRespondentEmail(e.target.value)} placeholder="correo@ejemplo.com" onKeyDown={(e) => e.key === 'Enter' && submitEmail()} />
           </div>
           <button onClick={submitEmail} className="btn btn-primary" style={{ width: '100%', height: '44px', fontSize: '14px' }}>Continuar →</button>
         </div>
-        <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
-          Formulario creado con <a href="/" style={{ color: 'var(--accent)' }}>Khipu Forms</a>
-        </p>
+      </div>
+    </div>
+  );
+
+  // v2.1 Informed Consent Modal
+  if (!consentAccepted && data?.form.informed_consent) return (
+    <div className="public-form-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '24px' }}>
+      <div className="mesh-gradient" />
+      <div style={{ width: '100%', maxWidth: '500px' }} className="animate-fade-in">
+        <div className="public-form-card">
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div style={{ fontSize: '36px', marginBottom: '12px' }}>📜</div>
+            <h1 style={{ fontSize: '20px', fontWeight: '800', color: 'white', marginBottom: '10px' }}>Consentimiento Informado</h1>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Por favor, lee y acepta los términos antes de continuar.</p>
+          </div>
+          <div style={{ 
+            background: 'rgba(255,255,255,0.03)', 
+            border: '1px solid rgba(255,255,255,0.08)', 
+            borderRadius: '12px', 
+            padding: '20px', 
+            maxHeight: '300px', 
+            overflowY: 'auto', 
+            fontSize: '13px', 
+            lineHeight: '1.6', 
+            color: 'rgba(255,255,255,0.7)',
+            marginBottom: '24px'
+          }}>
+            {data.form.informed_consent}
+          </div>
+          <button onClick={() => setConsentAccepted(true)} className="btn btn-primary" style={{ width: '100%', height: '50px', fontSize: '15px', fontWeight: '700' }}>
+            He leído y acepto los términos
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -237,8 +289,10 @@ export default function PublicFormPage() {
 
   return (
     <div className="public-form-wrapper">
+      <div className="mesh-gradient" />
+
       {/* Header */}
-      <div style={{ borderBottom: '1px solid var(--border)', background: 'rgba(17,17,19,0.8)', backdropFilter: 'blur(12px)', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.7)', backdropFilter: 'blur(15px)', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
         <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '24px', width: 'auto', flexShrink: 0 }} />
         <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.form.title}</span>
         {total > 0 && (
@@ -248,57 +302,102 @@ export default function PublicFormPage() {
 
       {/* Progress bar */}
       {total > 0 && (
-        <div style={{ height: '3px', background: 'var(--border)' }}>
-          <div style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent), #a78bfa)', width: `${progress}%`, transition: 'width 0.4s ease' }} />
+        <div style={{ height: '2px', background: 'rgba(255,255,255,0.05)', position: 'sticky', top: '44px', zIndex: 10 }}>
+          <div style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent), #a78bfa)', width: `${progress}%`, transition: 'width 0.4s ease', boxShadow: '0 0 10px rgba(124,106,247,0.5)' }} />
         </div>
       )}
 
-      <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 20px 80px' }}>
-        {/* Form header */}
-        <div style={{ marginBottom: '36px' }} className="animate-fade-in">
-          {data.form.is_quiz && (
-            <span className="badge badge-purple" style={{ marginBottom: '12px', display: 'inline-flex', gap: '5px' }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
-              Cuestionario
-            </span>
-          )}
-          <h1 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: '1.2', marginBottom: '10px' }}>
-            {data.form.title}
-          </h1>
-          {data.form.description && (
-            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>{data.form.description}</p>
-          )}
-          {data.form.require_email && respondentEmail && (
-            <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 6l-10 7L2 6"/></svg>
-              Respondiendo como <strong style={{ color: 'var(--text-secondary)' }}>{respondentEmail}</strong>
+      <div style={{ maxWidth: '680px', width: '100%', margin: '0 auto', padding: '60px 20px 100px', position: 'relative', zIndex: 1 }}>
+        {/* Form header card (only show at start or in normal mode) */}
+        {(!data.form.step_by_step || currentIndex === 0) && (
+          <div style={{ marginBottom: '40px', padding: '0 10px' }} className="animate-fade-in">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              {data.form.is_quiz && (
+                <span className="badge badge-purple" style={{ padding: '4px 10px' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '4px' }}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+                  Cuestionario
+                </span>
+              )}
+              <div className="time-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                ~{Math.max(1, Math.ceil(total * 0.5))} min de lectura
+              </div>
             </div>
-          )}
-        </div>
+            
+            <h1 style={{ fontSize: '36px', fontWeight: '800', color: 'white', letterSpacing: '-0.04em', lineHeight: '1.1', marginBottom: '16px' }}>
+              {data.form.title}
+            </h1>
+            {data.form.description && (
+              <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '20px' }}>{data.form.description}</p>
+            )}
+            
+            {data.form.require_email && respondentEmail && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
+                Respondiendo como <span style={{ color: 'white' }}>{respondentEmail}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Fields */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {data.fields.map((field, idx) => (
-            <div key={field.id} className="animate-fade-in" style={{ animationDelay: `${idx * 40}ms` }}>
-              <FieldRenderer field={field} value={answers[field.id] || ''} onChange={(val) => { setAnswers({ ...answers, [field.id]: val }); if (validationErrors[field.id]) setValidationErrors({ ...validationErrors, [field.id]: '' }); }} error={validationErrors[field.id]} />
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {data.form.step_by_step ? (
+            // Step-by-Step Mode
+            <div key={data.fields[currentIndex].id} className="animate-scale-in">
+              <FieldRenderer 
+                field={data.fields[currentIndex]} 
+                value={answers[data.fields[currentIndex].id] || ''} 
+                onChange={(val) => { 
+                  setAnswers({ ...answers, [data.fields[currentIndex].id]: val }); 
+                  if (validationErrors[data.fields[currentIndex].id]) setValidationErrors({ ...validationErrors, [data.fields[currentIndex].id]: '' }); 
+                }} 
+                error={validationErrors[data.fields[currentIndex].id]} 
+              />
+              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                {currentIndex > 0 && (
+                  <button type="button" onClick={prevStep} className="btn btn-secondary" style={{ height: '50px', flex: 1, borderRadius: '14px' }}>
+                    Atrás
+                  </button>
+                )}
+                {currentIndex < total - 1 ? (
+                  <button type="button" onClick={nextStep} className="btn btn-primary" style={{ height: '50px', flex: 2, borderRadius: '14px', fontWeight: '700' }}>
+                    Siguiente →
+                  </button>
+                ) : (
+                  <button type="submit" disabled={submitting} className="btn btn-primary" style={{ height: '50px', flex: 2, borderRadius: '14px', fontWeight: '700' }}>
+                    {submitting ? 'Enviando...' : 'Finalizar y Enviar'}
+                  </button>
+                )}
+              </div>
             </div>
-          ))}
+          ) : (
+            // Normal Scrolling Mode
+            <>
+              {data.fields.map((field, idx) => (
+                <div key={field.id} className="animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
+                  <FieldRenderer field={field} value={answers[field.id] || ''} onChange={(val) => { setAnswers({ ...answers, [field.id]: val }); if (validationErrors[field.id]) setValidationErrors({ ...validationErrors, [field.id]: '' }); }} error={validationErrors[field.id]} />
+                </div>
+              ))}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: '20px', flexDirection: 'column', gap: '20px' }}>
+                <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width: '100%', height: '54px', fontSize: '16px', fontWeight: '700', borderRadius: '16px', boxShadow: '0 10px 25px rgba(124,106,247,0.3)' }}>
+                  {submitting ? (
+                    <><span style={{ width: '18px', height: '18px', border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite', marginRight: '10px' }} /> Enviando...</>
+                  ) : (data.form.is_quiz ? '🎯 Finalizar Cuestionario' : 'Enviar respuesta →')}
+                </button>
+              </div>
+            </>
+          )}
 
           {error && (
-            <div style={{ background: 'var(--error-dim)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '12px 16px', fontSize: '13px', color: 'var(--error)' }}>
+            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px', padding: '16px', fontSize: '14px', color: '#ef4444', textAlign: 'center' }}>
               {error}
             </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', flexWrap: 'wrap', gap: '12px' }}>
-            <button type="submit" disabled={submitting} className="btn btn-primary btn-lg" style={{ minWidth: '160px' }}>
-              {submitting ? (
-                <><span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /> Enviando...</>
-              ) : (data.form.is_quiz ? '🎯 Enviar respuestas' : 'Enviar respuesta →')}
-            </button>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Creado con <a href="/" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Khipu Forms</a>
-            </p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '20px', opacity: 0.5, gap: '8px' }}>
+            <span style={{ fontSize: '12px' }}>Potenciado por</span>
+            <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '16px', width: 'auto' }} />
           </div>
         </form>
       </div>
@@ -310,43 +409,47 @@ function FieldRenderer({ field, value, onChange, error }: {
   field: FormField; value: string; onChange: (val: string) => void; error?: string;
 }) {
   return (
-    <div style={{ background: 'var(--bg-secondary)', border: `1px solid ${error ? 'rgba(239,68,68,0.5)' : 'var(--border)'}`, borderRadius: '12px', padding: '20px', transition: 'border-color 0.2s' }}>
-      <label style={{ display: 'block', fontSize: '15px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '14px', lineHeight: '1.4' }}>
+    <div className="field-card">
+      <label style={{ display: 'block', fontSize: '16px', fontWeight: '600', color: 'white', marginBottom: '16px', lineHeight: '1.4' }}>
         {field.label}
-        {field.required && <span style={{ color: 'var(--error)', marginLeft: '4px' }}>*</span>}
+        {field.required && <span style={{ color: '#ef4444', marginLeft: '6px' }}>*</span>}
       </label>
 
-      {field.type === 'text' && <input className="input" style={{ height: '44px', fontSize: '14px' }} type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={`Tu respuesta...`} />}
-      {field.type === 'textarea' && <textarea className="textarea" style={{ minHeight: '100px', fontSize: '14px' }} value={value} onChange={(e) => onChange(e.target.value)} placeholder="Tu respuesta..." />}
-      {field.type === 'email' && <input className="input" style={{ height: '44px', fontSize: '14px' }} type="email" value={value} onChange={(e) => onChange(e.target.value)} placeholder="correo@ejemplo.com" />}
-      {field.type === 'number' && <input className="input" style={{ height: '44px', fontSize: '14px' }} type="number" value={value} onChange={(e) => onChange(e.target.value)} placeholder="0" />}
+      {field.type === 'text' && <input className="input glass-input" type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={`Escribe aquí...`} />}
+      {field.type === 'textarea' && <textarea className="textarea glass-input" style={{ minHeight: '120px', paddingTop: '14px' }} value={value} onChange={(e) => onChange(e.target.value)} placeholder="Escribe tu respuesta detallada..." />}
+      {field.type === 'email' && <input className="input glass-input" type="email" value={value} onChange={(e) => onChange(e.target.value)} placeholder="correo@ejemplo.com" />}
+      {field.type === 'number' && <input className="input glass-input" type="number" value={value} onChange={(e) => onChange(e.target.value)} placeholder="0" />}
 
       {field.type === 'select' && (
-        <select className="input" style={{ height: '44px', fontSize: '14px' }} value={value} onChange={(e) => onChange(e.target.value)}>
+        <select className="input glass-input" value={value} onChange={(e) => onChange(e.target.value)}>
           <option value="">Selecciona una opción</option>
           {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
       )}
 
       {field.type === 'radio' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {field.options.map((opt) => (
-            <div key={opt} className={`radio-option${value === opt ? ' selected' : ''}`} onClick={() => onChange(opt)}>
+            <div key={opt} className={`radio-option${value === opt ? ' selected' : ''}`} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px 18px' }} onClick={() => onChange(opt)}>
               <div className="radio-dot" />
-              <span>{opt}</span>
+              <span style={{ fontSize: '15px' }}>{opt}</span>
             </div>
           ))}
         </div>
       )}
 
       {field.type === 'checkbox' && (
-        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-          <input type="checkbox" checked={value === 'true'} onChange={(e) => onChange(e.target.checked ? 'true' : 'false')} style={{ width: '18px', height: '18px', accentColor: 'var(--accent)', cursor: 'pointer' }} />
-          <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Sí</span>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <input type="checkbox" checked={value === 'true'} onChange={(e) => onChange(e.target.checked ? 'true' : 'false')} style={{ width: '20px', height: '20px', accentColor: 'var(--accent)', cursor: 'pointer' }} />
+          <span style={{ fontSize: '15px', color: 'rgba(255,255,255,0.8)' }}>Confirmar selección</span>
         </label>
       )}
 
-      {error && <p style={{ fontSize: '12px', color: 'var(--error)', marginTop: '8px' }}>{error}</p>}
+      {error && <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {error}
+      </p>}
     </div>
   );
 }
+

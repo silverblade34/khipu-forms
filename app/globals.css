@@ -393,25 +393,94 @@ select.input {
   text-align: right;
 }
 
-/* ===== PUBLIC FORM PAGE ===== */
+/* ===== PUBLIC FORM PAGE REDESIGN v2.1 ===== */
 .public-form-wrapper {
   min-height: 100vh;
-  background: var(--bg-primary);
-  background-image:
-    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(124,106,247,0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 90% 80%, rgba(124,106,247,0.06) 0%, transparent 50%);
+  position: relative;
+  background-color: #050505;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
+/* Dynamic Mesh Gradient Background */
+.mesh-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  background: 
+    radial-gradient(at 0% 0%, rgba(124, 106, 247, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(167, 139, 250, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(124, 106, 247, 0.08) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(76, 29, 149, 0.1) 0px, transparent 50%);
+  filter: blur(80px);
+  animation: mesh-float 20s ease-in-out infinite alternate;
+}
+
+@keyframes mesh-float {
+  0% { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1.2) rotate(5deg); }
+}
+
 .public-form-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: 0 4px 40px rgba(0,0,0,0.4);
-  transition: box-shadow 0.3s ease;
+  position: relative;
+  z-index: 1;
+  background: rgba(17, 17, 19, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
 }
-@media (max-width: 640px) {
-  .public-form-card { padding: 20px; border-radius: 12px; }
+
+.field-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.field-card:focus-within {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(124, 106, 247, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* Custom inputs for glass effect */
+.glass-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(5px);
+  color: white !important;
+  font-size: 15px !important;
+  height: 48px !important;
+  border-radius: 12px !important;
+}
+
+.glass-input:focus {
+  border-color: var(--accent) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Time badge */
+.time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 
 /* ===== SCORE CARD (quiz result) ===== */
 .score-card {

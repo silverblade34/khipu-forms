@@ -22,6 +22,9 @@ export interface Form {
   quiz_message: string | null;
   // Anti-duplicate
   require_email: boolean;
+  // v2.1
+  step_by_step: boolean;
+  informed_consent: string | null;
   created_at: string;
   updated_at: string;
   field_count?: number;

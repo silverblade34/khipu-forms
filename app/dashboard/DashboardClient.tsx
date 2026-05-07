@@ -95,6 +95,7 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [shareForm, setShareForm] = useState<Form | null>(null);
 
   async function handleCreateForm() {
     setCreating(true);
@@ -133,11 +134,59 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
     setTimeout(() => setCopied(null), 2000);
   }
 
+  const ShareModal = () => {
+    if (!shareForm) return null;
+    const url = `${window.location.origin}/f/${shareForm.id}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=111113&color=ffffff&margin=10`;
+
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setShareForm(null)}>
+        <div style={{ background: '#111113', border: '1px solid var(--border)', borderRadius: '28px', padding: '36px', maxWidth: '420px', width: '100%', position: 'relative', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }} className="animate-scale-in" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => setShareForm(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+          
+          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🚀</div>
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'white', marginBottom: '8px', letterSpacing: '-0.02em' }}>Compartir formulario</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>Tu formulario está listo para recibir respuestas.</p>
+          </div>
+
+          <div style={{ background: '#1a1a1c', padding: '32px', borderRadius: '20px', display: 'flex', justifyContent: 'center', marginBottom: '28px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' }}>
+            <img src={qrUrl} alt="QR Code" style={{ width: '180px', height: '180px', borderRadius: '12px' }} />
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <input 
+              readOnly 
+              value={url} 
+              className="input" 
+              style={{ fontSize: '13px', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.6)', height: '46px', borderRadius: '12px' }} 
+            />
+            <button 
+              onClick={() => handleCopyLink(shareForm.id)} 
+              className="btn btn-primary"
+              style={{ flexShrink: 0, height: '46px', padding: '0 20px', borderRadius: '12px' }}
+            >
+              {copied === shareForm.id ? '¡Copiado!' : 'Copiar'}
+            </button>
+          </div>
+          <div style={{ background: 'rgba(124,106,247,0.1)', border: '1px solid rgba(124,106,247,0.2)', padding: '12px 16px', borderRadius: '12px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--accent)', textAlign: 'center', margin: 0, fontWeight: '500' }}>
+              💡 Ideal para universitarios: Descarga este QR y pégalo en los pasillos de tu facultad.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const userName = isGuest ? 'Invitado' : (user.name || user.email.split('@')[0]);
   const userInitial = isGuest ? null : (user.name?.[0] || user.email[0]).toUpperCase();
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
+      <ShareModal />
       {/* Top nav */}
       <header style={{
         borderBottom: '1px solid var(--border)',
@@ -342,16 +391,13 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
                       <IconBarChart />
                     </Link>
                     <button
-                      onClick={() => handleCopyLink(form.id)}
+                      onClick={() => setShareForm(form)}
                       className="btn btn-ghost btn-sm"
-                      title={copied === form.id ? 'Copiado' : 'Copiar link'}
-                      style={{ color: copied === form.id ? 'var(--success)' : undefined }}
+                      title="Compartir y QR"
+                      style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
                     >
-                      {copied === form.id ? (
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      ) : <IconLink />}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+                      Compartir
                     </button>
                     <button
                       onClick={() => handleDelete(form.id)}
