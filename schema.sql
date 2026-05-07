@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS forms (
   informed_consent TEXT,
   -- v2.2 Presentation modes: 'classic' | 'cards' | 'duolingo'
   presentation_mode VARCHAR(20) DEFAULT 'classic',
+  show_hints BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -58,6 +59,7 @@ CREATE TABLE IF NOT EXISTS form_fields (
   -- v2.2: per-field hint (before answering) and explanation (after answering)
   hint TEXT,
   explanation TEXT,
+  time_limit INTEGER DEFAULT 0,
   order_index INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -131,12 +133,21 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='forms' AND column_name='presentation_mode') THEN
     ALTER TABLE forms ADD COLUMN presentation_mode VARCHAR(20) DEFAULT 'classic';
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='forms' AND column_name='show_hints') THEN
+    ALTER TABLE forms ADD COLUMN show_hints BOOLEAN DEFAULT false;
+  END IF;
   -- form_fields table
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='form_fields' AND column_name='correct_answer') THEN
     ALTER TABLE form_fields ADD COLUMN correct_answer TEXT;
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='form_fields' AND column_name='hint') THEN
     ALTER TABLE form_fields ADD COLUMN hint TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='form_fields' AND column_name='explanation') THEN
+    ALTER TABLE form_fields ADD COLUMN explanation TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='form_fields' AND column_name='time_limit') THEN
+    ALTER TABLE form_fields ADD COLUMN time_limit INTEGER DEFAULT 0;
   END IF;
   -- responses table
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='responses' AND column_name='respondent_email') THEN
