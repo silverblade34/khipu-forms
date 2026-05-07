@@ -105,6 +105,7 @@ export async function updateForm(formId: string, userId: string, data: {
   require_email?: boolean;
   step_by_step?: boolean;
   informed_consent?: string | null;
+  presentation_mode?: 'classic' | 'cards' | 'duolingo';
 }): Promise<Form | null> {
   const form = await queryOne<Form>('SELECT * FROM forms WHERE id = $1 AND user_id = $2', [formId, userId]);
   if (!form) return null;
@@ -121,8 +122,9 @@ export async function updateForm(formId: string, userId: string, data: {
       require_email = COALESCE($8, require_email),
       step_by_step = COALESCE($9, step_by_step),
       informed_consent = $10,
+      presentation_mode = COALESCE($11, presentation_mode),
       updated_at = NOW()
-     WHERE id = $11 AND user_id = $12 RETURNING *`,
+     WHERE id = $12 AND user_id = $13 RETURNING *`,
     [
       data.title ?? null,
       data.description !== undefined ? data.description : null,
@@ -134,6 +136,7 @@ export async function updateForm(formId: string, userId: string, data: {
       data.require_email ?? null,
       data.step_by_step ?? null,
       data.informed_consent !== undefined ? data.informed_consent : form.informed_consent,
+      data.presentation_mode ?? null,
       formId,
       userId,
     ]

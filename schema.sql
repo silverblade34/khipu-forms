@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS forms (
   -- v2.1 New features
   step_by_step BOOLEAN DEFAULT false,
   informed_consent TEXT,
+  -- v2.2 Presentation modes: 'classic' | 'cards' | 'duolingo'
+  presentation_mode VARCHAR(20) DEFAULT 'classic',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -123,9 +125,15 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='forms' AND column_name='informed_consent') THEN
     ALTER TABLE forms ADD COLUMN informed_consent TEXT;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='forms' AND column_name='presentation_mode') THEN
+    ALTER TABLE forms ADD COLUMN presentation_mode VARCHAR(20) DEFAULT 'classic';
+  END IF;
   -- form_fields table
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='form_fields' AND column_name='correct_answer') THEN
     ALTER TABLE form_fields ADD COLUMN correct_answer TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='form_fields' AND column_name='hint') THEN
+    ALTER TABLE form_fields ADD COLUMN hint TEXT;
   END IF;
   -- responses table
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='responses' AND column_name='respondent_email') THEN

@@ -16,6 +16,7 @@ interface BuilderState {
   requireEmail: boolean;
   stepByStep: boolean;
   informedConsent: string;
+  presentationMode: 'classic' | 'cards' | 'duolingo';
   fields: FormField[];
   isDirty: boolean;
   isSaving: boolean;
@@ -32,6 +33,7 @@ interface BuilderState {
   setRequireEmail: (v: boolean) => void;
   setStepByStep: (v: boolean) => void;
   setInformedConsent: (v: string) => void;
+  setPresentationMode: (v: 'classic' | 'cards' | 'duolingo') => void;
   setFields: (fields: FormField[]) => void;
   addField: (type: FormField['type']) => void;
   removeField: (id: string) => void;
@@ -55,6 +57,7 @@ const initialState = {
   requireEmail: false,
   stepByStep: false,
   informedConsent: '',
+  presentationMode: 'classic' as const,
   fields: [],
   isDirty: false,
   isSaving: false,
@@ -74,6 +77,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setRequireEmail: (requireEmail) => set({ requireEmail, isDirty: true }),
   setStepByStep: (stepByStep) => set({ stepByStep, isDirty: true }),
   setInformedConsent: (informedConsent) => set({ informedConsent, isDirty: true }),
+  setPresentationMode: (presentationMode) => set({ presentationMode, isDirty: true }),
   setFields: (fields) => set({ fields, isDirty: false }),
 
   addField: (type) => {
@@ -86,6 +90,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       required: false,
       options: (type === 'select' || type === 'radio') ? ['Opción 1', 'Opción 2'] : [],
       correct_answer: null,
+      hint: null,
       order_index: fields.length,
       created_at: new Date().toISOString(),
     };

@@ -47,6 +47,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
     store.setRequireEmail(form.require_email ?? false);
     store.setStepByStep(form.step_by_step ?? false);
     store.setInformedConsent(form.informed_consent || '');
+    store.setPresentationMode((form.presentation_mode as 'classic' | 'cards' | 'duolingo') ?? 'classic');
     store.setFields(initialFields);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.id]);
@@ -69,6 +70,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
           require_email: store.requireEmail,
           step_by_step: store.stepByStep,
           informed_consent: store.informedConsent || null,
+          presentation_mode: store.presentationMode,
         }),
       });
       await fetch(`/api/forms/${form.id}/fields`, {
@@ -324,6 +326,39 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
                   placeholder="Texto legal que el usuario debe aceptar..."
                 />
               </div>
+
+              {/* Presentation Mode Picker */}
+              <div className="field-group">
+                <label className="label">🎨 Modo de presentación</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {([
+                    { value: 'classic', emoji: '📋', title: 'Clásico', desc: 'Lista scrollable de preguntas' },
+                    { value: 'cards',   emoji: '🃏', title: 'Tarjetas', desc: 'Una pregunta a la vez, con animación' },
+                    { value: 'duolingo',emoji: '🎮', title: 'Duolingo', desc: 'Gamificado: puntos, vidas y feedback' },
+                  ] as const).map((mode) => (
+                    <div
+                      key={mode.value}
+                      onClick={() => store.setPresentationMode(mode.value)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '10px',
+                        padding: '10px 12px', borderRadius: '10px', cursor: 'pointer',
+                        border: `1.5px solid ${store.presentationMode === mode.value ? 'var(--accent)' : 'var(--border)'}`,
+                        background: store.presentationMode === mode.value ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <span style={{ fontSize: '18px', flexShrink: 0 }}>{mode.emoji}</span>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '12px', fontWeight: '600', color: store.presentationMode === mode.value ? 'var(--accent)' : 'var(--text-primary)', margin: 0 }}>{mode.title}</p>
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>{mode.desc}</p>
+                      </div>
+                      {store.presentationMode === mode.value && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
@@ -530,6 +565,17 @@ function FieldCard({
               </select>
             </div>
           )}
+
+          <div className="field-group">
+            <label className="label">💡 Pista / Dato curioso (modo Duolingo)</label>
+            <textarea
+              className="textarea"
+              style={{ minHeight: '56px', fontSize: '12px' }}
+              value={field.hint ?? ''}
+              onChange={(e) => onUpdate({ hint: e.target.value || null })}
+              placeholder="Ej: ¡La respuesta correcta es... porque...!"
+            />
+          </div>
         </div>
       )}
     </div>

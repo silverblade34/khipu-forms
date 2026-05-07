@@ -25,6 +25,8 @@ export interface Form {
   // v2.1
   step_by_step: boolean;
   informed_consent: string | null;
+  // v2.2 Presentation modes
+  presentation_mode: 'classic' | 'cards' | 'duolingo';
   created_at: string;
   updated_at: string;
   field_count?: number;
@@ -39,6 +41,8 @@ export interface FormField {
   required: boolean;
   options: string[];
   correct_answer: string | null;
+  // v2.2
+  hint: string | null;
   order_index: number;
   created_at: string;
 }

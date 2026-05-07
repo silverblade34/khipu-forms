@@ -27,6 +27,12 @@ export default function PublicFormPage() {
   // v2.1
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  // v2.2 Duolingo mode
+  const [points, setPoints] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [feedback, setFeedback] = useState<{ correct: boolean; hint: string | null } | null>(null);
+  const [slideDir, setSlideDir] = useState<'left' | 'right'>('right');
 
   useEffect(() => {
     fetch(`/api/public/forms/${formId}`)
@@ -45,8 +51,7 @@ export default function PublicFormPage() {
   const total = data?.fields.length ?? 0;
   const progress = total > 0 ? Math.round((answered / total) * 100) : 0;
 
-  // Navigation for step-by-step
-  const nextStep = () => {
+  const goNext = (dir: 'left' | 'right' = 'right') => {
     if (!data) return;
     const currentField = data.fields[currentIndex];
     const val = answers[currentField.id] || '';
@@ -54,11 +59,32 @@ export default function PublicFormPage() {
       setValidationErrors({ ...validationErrors, [currentField.id]: 'Este campo es obligatorio' });
       return;
     }
+    setSlideDir(dir);
     if (currentIndex < total - 1) setCurrentIndex(currentIndex + 1);
   };
 
-  const prevStep = () => {
+  const goPrev = () => {
+    setSlideDir('left');
     if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
+  };
+
+  // Duolingo: check answer immediately
+  const checkAnswer = (fieldId: string, val: string) => {
+    if (!data) return;
+    const field = data.fields.find(f => f.id === fieldId);
+    if (!field?.correct_answer) {
+      setFeedback(null);
+      return;
+    }
+    const correct = val.trim().toLowerCase() === field.correct_answer.trim().toLowerCase();
+    setFeedback({ correct, hint: field.hint });
+    if (correct) {
+      setPoints(p => p + 10);
+      setStreak(s => s + 1);
+    } else {
+      setStreak(0);
+      setLives(l => Math.max(0, l - 1));
+    }
   };
 
   function checkAccessCode() {
@@ -287,9 +313,257 @@ export default function PublicFormPage() {
 
   if (!data) return null;
 
-  return (
+  const mode = data.form.presentation_mode ?? 'classic';
+  const field = data.fields[currentIndex];
+
+  // ── Shared header (sticky top bar) ──────────────────────────────────────────
+  const TopBar = () => (
+    <>
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.8)', backdropFilter: 'blur(15px)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
+        <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '22px', width: 'auto', flexShrink: 0 }} />
+        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.form.title}</span>
+        {mode === 'duolingo' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>🔥 {streak}</span>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '4px' }}>⭐ {points}</span>
+            <div style={{ display: 'flex', gap: '3px' }}>
+              {[...Array(3)].map((_, i) => <span key={i} style={{ fontSize: '14px', opacity: i < lives ? 1 : 0.2 }}>❤️</span>)}
+            </div>
+          </div>
+        )}
+        {mode !== 'duolingo' && total > 0 && (
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0 }}>{mode === 'classic' ? `${answered}/${total}` : `${currentIndex + 1}/${total}`}</span>
+        )}
+      </div>
+      {/* Progress bar */}
+      <div style={{ height: '3px', background: 'rgba(255,255,255,0.05)', position: 'sticky', top: '43px', zIndex: 10 }}>
+        <div style={{ height: '100%', background: mode === 'duolingo' ? 'linear-gradient(90deg,#22c55e,#86efac)' : 'linear-gradient(90deg,var(--accent),#a78bfa)', width: mode === 'classic' ? `${progress}%` : `${Math.round(((currentIndex) / total) * 100)}%`, transition: 'width 0.4s ease', boxShadow: '0 0 8px rgba(124,106,247,0.4)' }} />
+      </div>
+    </>
+  );
+
+  // ── CLASSIC mode ─────────────────────────────────────────────────────────────
+  if (mode === 'classic') return (
     <div className="public-form-wrapper">
       <div className="mesh-gradient" />
+      <TopBar />
+      <div style={{ maxWidth: '640px', width: '100%', margin: '0 auto', padding: '40px 20px 80px', position: 'relative', zIndex: 1 }}>
+        <div style={{ marginBottom: '32px', padding: '0 4px' }} className="animate-fade-in">
+          <h1 style={{ fontSize: '28px', fontWeight: '800', color: 'white', letterSpacing: '-0.03em', lineHeight: '1.2', marginBottom: '10px' }}>{data.form.title}</h1>
+          {data.form.description && <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6' }}>{data.form.description}</p>}
+          {data.form.require_email && respondentEmail && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)', marginTop: '12px' }}>
+              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
+              {respondentEmail}
+            </div>
+          )}
+        </div>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {data.fields.map((f, idx) => (
+            <div key={f.id} className="animate-fade-in" style={{ animationDelay: `${idx * 40}ms` }}>
+              <FieldRenderer field={f} value={answers[f.id] || ''} onChange={(val) => { setAnswers({ ...answers, [f.id]: val }); if (validationErrors[f.id]) setValidationErrors({ ...validationErrors, [f.id]: '' }); }} error={validationErrors[f.id]} />
+            </div>
+          ))}
+          {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#ef4444', textAlign: 'center' }}>{error}</div>}
+          <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width: '100%', height: '48px', fontSize: '15px', fontWeight: '700', borderRadius: '14px', boxShadow: '0 8px 20px rgba(124,106,247,0.2)', marginTop: '4px' }}>
+            {submitting ? <><span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite', marginRight: '8px' }} />Enviando...</> : (data.form.is_quiz ? '🎯 Finalizar Cuestionario' : 'Enviar respuesta →')}
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.35, gap: '6px' }}>
+            <span style={{ fontSize: '11px' }}>Potenciado por</span>
+            <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '13px', width: 'auto' }} />
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  // ── CARDS mode ───────────────────────────────────────────────────────────────
+  if (mode === 'cards') return (
+    <div className="public-form-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="mesh-gradient" />
+      <TopBar />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', position: 'relative', zIndex: 1 }}>
+        {/* Step counter */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Pregunta</span>
+          <div style={{ fontSize: '52px', fontWeight: '900', color: 'white', lineHeight: 1, letterSpacing: '-0.04em' }}>{currentIndex + 1}<span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '32px' }}>/{total}</span></div>
+        </div>
+
+        {/* Card */}
+        <div key={`card-${currentIndex}-${slideDir}`} className={`animate-slide-${slideDir}`} style={{ width: '100%', maxWidth: '560px' }}>
+          <div className="field-card" style={{ padding: '32px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(17,17,19,0.7)' }}>
+            <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
+              {field?.required && '* '}Campo {currentIndex + 1}
+            </p>
+            <label style={{ display: 'block', fontSize: '20px', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '24px' }}>
+              {field?.label}
+            </label>
+            {field && (
+              <FieldRenderer field={field} value={answers[field.id] || ''} onChange={(val) => { setAnswers({ ...answers, [field.id]: val }); if (validationErrors[field.id]) setValidationErrors({ ...validationErrors, [field.id]: '' }); }} error={validationErrors[field.id]} hideLabel />
+            )}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '28px', width: '100%', maxWidth: '560px' }}>
+          <button type="button" onClick={goPrev} disabled={currentIndex === 0} className="btn btn-secondary" style={{ height: '50px', flex: 1, borderRadius: '14px', opacity: currentIndex === 0 ? 0.3 : 1 }}>
+            ← Atrás
+          </button>
+          {currentIndex < total - 1 ? (
+            <button type="button" onClick={() => goNext('right')} className="btn btn-primary" style={{ height: '50px', flex: 2, borderRadius: '14px', fontWeight: '700', fontSize: '15px' }}>
+              Siguiente →
+            </button>
+          ) : (
+            <button type="button" onClick={handleSubmit as unknown as React.MouseEventHandler} disabled={submitting} className="btn btn-primary" style={{ height: '50px', flex: 2, borderRadius: '14px', fontWeight: '700', fontSize: '15px' }}>
+              {submitting ? 'Enviando...' : '✓ Finalizar'}
+            </button>
+          )}
+        </div>
+        {error && <p style={{ fontSize: '13px', color: '#ef4444', marginTop: '12px' }}>{error}</p>}
+      </div>
+    </div>
+  );
+
+  // ── DUOLINGO mode ─────────────────────────────────────────────────────────────
+  const isGameOver = lives <= 0;
+  return (
+    <div className="public-form-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="mesh-gradient" style={{ opacity: feedback?.correct ? 0.6 : feedback ? 0.3 : 1, transition: 'opacity 0.3s' }} />
+      <TopBar />
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', position: 'relative', zIndex: 1 }}>
+        {isGameOver ? (
+          <div className="animate-scale-in" style={{ textAlign: 'center', maxWidth: '400px' }}>
+            <div style={{ fontSize: '64px', marginBottom: '16px' }}>💔</div>
+            <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>¡Sin vidas!</h2>
+            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', marginBottom: '28px' }}>No te rindas, ¡puedes intentarlo de nuevo!</p>
+            <button onClick={() => { setLives(3); setPoints(0); setStreak(0); setCurrentIndex(0); setAnswers({}); setFeedback(null); }} className="btn btn-primary" style={{ height: '50px', padding: '0 32px', borderRadius: '14px', fontWeight: '700', fontSize: '15px' }}>
+              🔄 Intentar de nuevo
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Question card */}
+            <div key={`duo-${currentIndex}`} className="animate-scale-in" style={{ width: '100%', maxWidth: '560px', marginBottom: '20px' }}>
+              <div style={{ padding: '28px 28px 24px', borderRadius: '24px', border: `2px solid ${feedback ? (feedback.correct ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)') : 'rgba(255,255,255,0.08)'}`, background: feedback ? (feedback.correct ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)') : 'rgba(17,17,19,0.7)', transition: 'all 0.3s' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{currentIndex + 1} / {total}</span>
+                  {streak >= 2 && <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', background: 'rgba(245,158,11,0.15)', padding: '3px 10px', borderRadius: '99px' }}>🔥 Racha x{streak}</span>}
+                </div>
+                <label style={{ display: 'block', fontSize: '20px', fontWeight: '700', color: 'white', lineHeight: '1.4', marginBottom: '20px' }}>
+                  {field?.label}
+                </label>
+                {field && !feedback && (
+                  <FieldRenderer
+                    field={field}
+                    value={answers[field.id] || ''}
+                    onChange={(val) => {
+                      setAnswers({ ...answers, [field.id]: val });
+                      // Auto-check for radio/select with correct_answer
+                      if ((field.type === 'radio' || field.type === 'select') && field.correct_answer) {
+                        checkAnswer(field.id, val);
+                      }
+                    }}
+                    error={validationErrors[field.id]}
+                    hideLabel
+                  />
+                )}
+
+                {/* Feedback panel */}
+                {feedback && (
+                  <div className="animate-fade-in">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '28px' }}>{feedback.correct ? '✅' : '❌'}</span>
+                      <div>
+                        <p style={{ fontWeight: '700', fontSize: '15px', color: feedback.correct ? '#22c55e' : '#ef4444', margin: 0 }}>{feedback.correct ? `¡Correcto! +10 puntos` : 'Incorrecto'}</p>
+                        {!feedback.correct && field?.correct_answer && (
+                          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', margin: 0 }}>Respuesta correcta: <strong style={{ color: 'white' }}>{field.correct_answer}</strong></p>
+                        )}
+                      </div>
+                    </div>
+                    {feedback.hint && (
+                      <div style={{ background: 'rgba(124,106,247,0.1)', border: '1px solid rgba(124,106,247,0.2)', borderRadius: '12px', padding: '12px 16px' }}>
+                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: '1.6' }}>💡 {feedback.hint}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Manual check for text fields */}
+                {!feedback && field && (field.type === 'text' || field.type === 'textarea') && field.correct_answer && (
+                  <button type="button" onClick={() => checkAnswer(field.id, answers[field.id] || '')} className="btn btn-secondary" style={{ marginTop: '12px', height: '40px', fontSize: '13px', borderRadius: '10px' }}>
+                    Verificar respuesta
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Action button */}
+            <div style={{ width: '100%', maxWidth: '560px' }}>
+              {feedback || !field?.correct_answer ? (
+                currentIndex < total - 1 ? (
+                  <button type="button" onClick={() => { setFeedback(null); goNext('right'); }} className="btn btn-primary" style={{ width: '100%', height: '52px', borderRadius: '16px', fontWeight: '700', fontSize: '16px', background: feedback?.correct ? 'linear-gradient(135deg,#22c55e,#16a34a)' : undefined }}>
+                    Continuar →
+                  </button>
+                ) : (
+                  <button type="button" onClick={handleSubmit as unknown as React.MouseEventHandler} disabled={submitting} className="btn btn-primary" style={{ width: '100%', height: '52px', borderRadius: '16px', fontWeight: '700', fontSize: '16px' }}>
+                    {submitting ? 'Enviando...' : '🏆 Ver resultados'}
+                  </button>
+                )
+              ) : null}
+            </div>
+          </>
+        )}
+        {error && <p style={{ fontSize: '13px', color: '#ef4444', marginTop: '12px' }}>{error}</p>}
+      </div>
+    </div>
+  );
+}
+
+function FieldRenderer({ field, value, onChange, error, hideLabel }: {
+  field: FormField; value: string; onChange: (val: string) => void; error?: string; hideLabel?: boolean;
+}) {
+  return (
+    <div>
+      {!hideLabel && (
+        <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: 'white', marginBottom: '12px', lineHeight: '1.4' }}>
+          {field.label}{field.required && <span style={{ color: '#ef4444', marginLeft: '4px' }}>*</span>}
+        </label>
+      )}
+      {field.type === 'text' && <input className="input glass-input" type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder="Escribe aquí..." />}
+      {field.type === 'textarea' && <textarea className="textarea glass-input" style={{ minHeight: '100px', paddingTop: '12px' }} value={value} onChange={(e) => onChange(e.target.value)} placeholder="Escribe tu respuesta detallada..." />}
+      {field.type === 'email' && <input className="input glass-input" type="email" value={value} onChange={(e) => onChange(e.target.value)} placeholder="correo@ejemplo.com" />}
+      {field.type === 'number' && <input className="input glass-input" type="number" value={value} onChange={(e) => onChange(e.target.value)} placeholder="0" />}
+      {field.type === 'select' && (
+        <select className="input glass-input" value={value} onChange={(e) => onChange(e.target.value)}>
+          <option value="">Selecciona una opción</option>
+          {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+        </select>
+      )}
+      {field.type === 'radio' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {field.options.map((opt) => (
+            <div key={opt} className={`radio-option${value === opt ? ' selected' : ''}`} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${value === opt ? 'rgba(124,106,247,0.5)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '12px', padding: '12px 16px', cursor: 'pointer', transition: 'all 0.15s' }} onClick={() => onChange(opt)}>
+              <div className="radio-dot" style={{ width: '14px', height: '14px', flexShrink: 0 }} />
+              <span style={{ fontSize: '14px' }}>{opt}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {field.type === 'checkbox' && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <input type="checkbox" checked={value === 'true'} onChange={(e) => onChange(e.target.checked ? 'true' : 'false')} style={{ width: '18px', height: '18px', accentColor: 'var(--accent)', cursor: 'pointer' }} />
+          <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>Confirmar selección</span>
+        </label>
+      )}
+      {error && <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {error}
+      </p>}
+    </div>
+  );
+}
+
 
       {/* Header */}
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.7)', backdropFilter: 'blur(15px)', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>

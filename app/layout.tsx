@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     type: 'website',
   },
   icons: {
-    icon: '/logo-form-khipu.png',
-    apple: '/logo-form-khipu.png',
+    icon: '/favicon-form-khipu.png',
+    apple: '/favicon-form-khipu.png',
   },
 };
 
