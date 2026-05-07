@@ -495,34 +495,39 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
               </div>
               
               {/* Educational Chalkboard Section */}
-              <div style={{ display: 'flex', gap: '16px', flex: '1.2', minWidth: '340px', flexDirection: 'row', alignItems: 'flex-end' }} className="llama-lesson-container">
+              <div style={{ display: 'flex', gap: '20px', flex: '1', width: '100%', maxWidth: '100%', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center' }} className="llama-lesson-container">
                 <style>{`
                   @media (max-width: 768px) {
                     .llama-lesson-container {
                       flex-direction: column-reverse !important;
                       align-items: center !important;
+                      gap: 12px !important;
                     }
                     .chalkboard-container {
                       width: 100% !important;
+                      min-width: 0 !important;
                     }
                   }
                 `}</style>
-                <div style={{ width: '110px', height: '110px', flexShrink: 0, position: 'relative' }}>
+                <div style={{ width: '100px', height: '100px', flexShrink: 0, position: 'relative' }}>
                   <img src="/llama-teacher.png" alt="Llama Teacher" style={{ width: '100%', height: '100%', objectFit: 'contain' }} className="animate-bounce-slow" />
                 </div>
                 
                 <div className="chalkboard-container" style={{ 
                   flex: 1, 
+                  minWidth: '300px',
+                  maxWidth: '500px',
                   background: '#1a3c34', // Chalkboard Green
                   border: '8px solid #4a3728', // Wood Frame
                   borderRadius: '12px',
                   padding: '16px',
                   boxShadow: '0 10px 30px rgba(0,0,0,0.3), inset 0 0 40px rgba(0,0,0,0.2)',
                   position: 'relative',
-                  minHeight: '130px',
+                  minHeight: '140px',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  boxSizing: 'border-box'
                 }}>
                   {/* Chalk effect using SVG Filter or Noise */}
                   <div style={{ position: 'absolute', inset: 0, opacity: 0.05, pointerEvents: 'none', background: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }} />
