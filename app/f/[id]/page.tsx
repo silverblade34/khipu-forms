@@ -38,11 +38,16 @@ const TopBar = ({
   maxLives: number;
 }) => (
   <div style={{ position: 'sticky', top: 0, zIndex: 100 }}>
-    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.9)', backdropFilter: 'blur(20px)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px' }} className="top-bar-container">
+    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.9)', backdropFilter: 'blur(20px)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', position: 'sticky', top: 0, zIndex: 10 }} className="top-bar-container">
       <style>{`
         @media (max-width: 640px) {
           .top-bar-title { display: none !important; }
-          .top-bar-container { padding: 8px 12px !important; gap: 8px !important; }
+          .top-bar-container { padding: 12px 14px !important; gap: 10px !important; }
+          .gamification-stats { gap: 14px !important; }
+          .stat-item { font-size: 14px !important; gap: 6px !important; }
+          .stat-icon { width: 18px !important; height: 18px !important; }
+          .lives-container { gap: 6px !important; }
+          .life-icon { width: 16px !important; height: 16px !important; }
         }
         @keyframes pulse-red {
           0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
@@ -56,17 +61,17 @@ const TopBar = ({
       
       {currentMode === 'duolingo' && showGamification && (
         <div className="gamification-stats" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-          <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 12 7.5 12 11C12 11 14.5 10 16 10C17.5 10 19 12.5 19 15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15C5 12 7 9 9 7C9 7 9 11 11 11C11 11 12 2 12 2Z"/></svg>
+          <span className="stat-item" style={{ fontSize: '12px', fontWeight: '800', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <svg className="stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 12 7.5 12 11C12 11 14.5 10 16 10C17.5 10 19 12.5 19 15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15C5 12 7 9 9 7C9 7 9 11 11 11C11 11 12 2 12 2Z"/></svg>
             {streak}
           </span>
-          <span style={{ fontSize: '12px', fontWeight: '700', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          <span className="stat-item" style={{ fontSize: '12px', fontWeight: '800', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <svg className="stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
             {points}
           </span>
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <div className="lives-container" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
             {[...Array(maxLives)].map((_, i) => (
-              <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < lives ? "#ef4444" : "rgba(255,255,255,0.15)"} style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+              <svg key={i} className="life-icon" width="14" height="14" viewBox="0 0 24 24" fill={i < lives ? "#ef4444" : "rgba(255,255,255,0.15)"} style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                 <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.41 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.59 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/>
               </svg>
             ))}
