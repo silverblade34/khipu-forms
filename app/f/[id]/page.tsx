@@ -37,18 +37,23 @@ const TopBar = ({
   showGamification: boolean;
   maxLives: number;
 }) => (
-  <>
-    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.8)', backdropFilter: 'blur(15px)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', position: 'sticky', top: 0, zIndex: 10 }} className="top-bar-container">
+  <div style={{ position: 'sticky', top: 0, zIndex: 100 }}>
+    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.9)', backdropFilter: 'blur(20px)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px' }} className="top-bar-container">
       <style>{`
         @media (max-width: 640px) {
           .top-bar-title { display: none !important; }
-          .top-bar-container { padding: 8px 12px !important; gap: 6px !important; }
-          .gamification-stats { gap: 8px !important; }
-          .timer-box { margin-left: auto !important; }
+          .top-bar-container { padding: 8px 12px !important; gap: 8px !important; }
         }
+        @keyframes pulse-red {
+          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+          70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+        }
+        .timer-urgent { animation: pulse-red 1s infinite !important; background: rgba(239,68,68,0.9) !important; color: white !important; border-color: #ef4444 !important; }
       `}</style>
       <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '20px', width: 'auto', flexShrink: 0 }} />
       <span className="top-bar-title" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formTitle}</span>
+      
       {currentMode === 'duolingo' && showGamification && (
         <div className="gamification-stats" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
           <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -71,18 +76,37 @@ const TopBar = ({
       {currentMode !== 'duolingo' && total > 0 && (
         <span style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0 }}>{currentMode === 'classic' ? `${answered}/${total}` : `${currentIndex + 1}/${total}`}</span>
       )}
-      {timeLeft !== null && (
-        <div className="timer-box" style={{ marginLeft: '12px', padding: '4px 8px', background: timeLeft < 5 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', color: timeLeft < 5 ? '#ef4444' : 'white', fontSize: '12px', fontWeight: '700', border: `1px solid ${timeLeft < 5 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`, transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '6px', minWidth: '54px', justifyContent: 'center' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          0:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
-        </div>
-      )}
     </div>
+
+    {/* Dedicated Timer Row */}
+    {timeLeft !== null && (
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-1px', pointerEvents: 'none' }}>
+        <div className={`timer-box ${timeLeft < 5 ? 'timer-urgent' : ''}`} style={{ 
+          padding: '4px 14px', 
+          background: 'rgba(255,255,255,0.08)', 
+          border: '1px solid rgba(255,255,255,0.1)', 
+          borderTop: 'none',
+          borderRadius: '0 0 12px 12px', 
+          color: 'white', 
+          fontSize: '13px', 
+          fontWeight: '800', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          transition: 'all 0.3s'
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span style={{ fontFamily: 'monospace' }}>0:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}</span>
+        </div>
+      </div>
+    )}
+
     {/* Progress bar */}
-    <div style={{ height: '3px', background: 'rgba(255,255,255,0.05)', position: 'sticky', top: '43px', zIndex: 10 }}>
+    <div style={{ height: '3px', background: 'rgba(255,255,255,0.05)', marginTop: timeLeft !== null ? '4px' : '0' }}>
       <div style={{ height: '100%', background: currentMode === 'duolingo' ? 'linear-gradient(90deg,#22c55e,#86efac)' : 'linear-gradient(90deg,var(--accent),#a78bfa)', width: currentMode === 'classic' ? `${progress}%` : `${Math.round(((currentIndex) / total) * 100)}%`, transition: 'width 0.4s ease', boxShadow: '0 0 8px rgba(124,106,247,0.4)' }} />
     </div>
-  </>
+  </div>
 );
 
 export default function PublicFormPage() {
