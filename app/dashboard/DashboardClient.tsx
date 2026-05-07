@@ -128,22 +128,22 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
     {
       id: 'template-quiz',
       title: 'Examen de Certificación',
-      description: 'Ideal para evaluaciones con tiempo y pistas.',
+      description: 'Evaluación avanzada con tiempos, pistas y gamificación.',
       icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
       mode: 'duolingo',
       gamification: true,
       isQuiz: true,
       lives: 3,
       fields: [
-        { label: '¿Cuál es el elemento químico más abundante en el universo?', type: 'radio', required: true, order_index: 0, options: ['Hidrógeno', 'Helio', 'Oxígeno', 'Carbono'], correct_answer: 'Hidrógeno', hint: 'Es el primer elemento de la tabla periódica.', explanation: 'El hidrógeno constituye aproximadamente el 75% de la masa elemental del universo.' },
-        { label: 'Identifica los planetas gaseosos del sistema solar', type: 'checkbox', required: true, order_index: 1, options: ['Júpiter', 'Marte', 'Saturno', 'Tierra'], correct_answer: 'Júpiter,Saturno', hint: 'Son los más grandes y no tienen superficie sólida.' },
-        { label: '¿Quién propuso la teoría de la relatividad?', type: 'select', required: true, order_index: 2, options: ['Isaac Newton', 'Albert Einstein', 'Stephen Hawking'], correct_answer: 'Albert Einstein' }
+        { label: '¿Cuál es el elemento químico más abundante en el universo?', type: 'radio', required: true, order_index: 0, options: ['Hidrógeno', 'Helio', 'Oxígeno', 'Carbono'], correct_answer: 'Hidrógeno', hint: 'Es el primer elemento de la tabla periódica.', explanation: 'El hidrógeno constituye aproximadamente el 75% de la masa elemental del universo.', time_limit: 30 },
+        { label: 'Identifica los planetas gaseosos del sistema solar', type: 'checkbox', required: true, order_index: 1, options: ['Júpiter', 'Marte', 'Saturno', 'Tierra'], correct_answer: 'Júpiter,Saturno', hint: 'Son los más grandes y no tienen superficie sólida.', time_limit: 45 },
+        { label: '¿Quién propuso la teoría de la relatividad?', type: 'select', required: true, order_index: 2, options: ['Isaac Newton', 'Albert Einstein', 'Stephen Hawking'], correct_answer: 'Albert Einstein', time_limit: 20 }
       ]
     },
     {
       id: 'template-survey',
       title: 'Encuesta de Satisfacción',
-      description: 'Recopila feedback con un diseño sobrio.',
+      description: 'Análisis de sentimiento con diseño clásico profesional.',
       icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>,
       mode: 'classic',
       gamification: false,
@@ -156,8 +156,8 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
     },
     {
       id: 'template-leads',
-      title: 'Captura de Leads',
-      description: 'Optimizado para conversiones rápidas.',
+      title: 'Captura de Leads (Cards)',
+      description: 'Experiencia inmersiva paso a paso para móviles.',
       icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
       mode: 'cards',
       gamification: false,
@@ -171,15 +171,15 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
     {
       id: 'template-trivia',
       title: 'Trivia de Cultura',
-      description: 'Engagement máximo con rachas y puntos.',
+      description: 'Interactivo pro con rachas y feedback inmediato.',
       icon: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4"/><circle cx="15" cy="10" r="1"/><circle cx="15" cy="14" r="1"/><circle cx="18" cy="12" r="1"/></svg>,
       mode: 'duolingo',
       gamification: true,
       isQuiz: true,
       lives: 5,
       fields: [
-        { label: '¿En qué ciudad se encuentran los Jardines Colgantes?', type: 'radio', required: true, order_index: 0, options: ['Babilonia', 'Roma', 'Atenas'], correct_answer: 'Babilonia', hint: 'Fue una de las 7 maravillas antiguas.', explanation: 'Babilonia estaba situada en la actual Irak.' },
-        { label: 'Inventores famosos', type: 'checkbox', required: true, order_index: 1, options: ['Nikola Tesla', 'Leonardo da Vinci', 'Steve Jobs', 'Batman'], correct_answer: 'Nikola Tesla,Leonardo da Vinci' }
+        { label: '¿En qué ciudad se encuentran los Jardines Colgantes?', type: 'radio', required: true, order_index: 0, options: ['Babilonia', 'Roma', 'Atenas'], correct_answer: 'Babilonia', hint: 'Fue una de las 7 maravillas antiguas.', explanation: 'Babilonia estaba situada en la actual Irak.', time_limit: 15 },
+        { label: 'Inventores famosos', type: 'checkbox', required: true, order_index: 1, options: ['Nikola Tesla', 'Leonardo da Vinci', 'Steve Jobs', 'Batman'], correct_answer: 'Nikola Tesla,Leonardo da Vinci', time_limit: 20 }
       ]
     }
   ];
@@ -364,21 +364,13 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       
       {/* Construction Modal */}
       {!!creatingId && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#111113', border: '1px solid var(--border)', borderRadius: '32px', padding: '48px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }} className="animate-scale-in">
-            <div style={{ width: '140px', height: '140px', margin: '0 auto 24px', position: 'relative' }}>
-              <div style={{ position: 'absolute', inset: 0, border: '4px solid var(--accent)', borderRadius: '50%', borderTopColor: 'transparent', animation: 'spin 1.5s linear infinite' }} />
-              <img src="/llama-happy.png" alt="Building" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '20px' }} className="animate-bounce" />
-            </div>
-            <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'white', marginBottom: '12px', letterSpacing: '-0.02em' }}>Construyendo tu formulario</h3>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '0' }}>
-              La Llama Khipu está inyectando los campos y configurando la IA para tu nueva plantilla...
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#111113', border: '1px solid var(--border)', borderRadius: '24px', padding: '32px', maxWidth: '320px', width: '90%', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} className="animate-scale-in">
+            <div style={{ width: '48px', height: '48px', margin: '0 auto 20px', border: '3px solid rgba(124,106,247,0.1)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'white', marginBottom: '8px', letterSpacing: '-0.02em' }}>Construyendo...</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '0' }}>
+              Configurando tu nueva plantilla profesional.
             </p>
-            <div style={{ marginTop: '24px', display: 'flex', gap: '4px', justifyContent: 'center' }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)', opacity: 0.3, animation: 'pulse 1s infinite', animationDelay: `${i * 0.2}s` }} />
-              ))}
-            </div>
           </div>
         </div>
       )}
