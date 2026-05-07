@@ -36,6 +36,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     store.setFormId(form.id);
@@ -85,7 +86,8 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
       console.error('Save error:', error);
-      alert('Error al guardar los cambios. Por favor, verifica tu conexión.');
+      setSaveError(true);
+      setTimeout(() => setSaveError(false), 5000);
     } finally {
       store.setIsSaving(false);
     }
@@ -463,6 +465,34 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
           .btn-share-text { display: inline !important; }
         }
         .btn-share-text { display: none; }
+      `}</style>
+
+      {saveError && (
+        <div style={{
+          position: 'fixed', bottom: '24px', right: '24px', zIndex: 100,
+          background: '#1a1a1c', border: '1px solid rgba(239,68,68,0.4)',
+          borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center',
+          gap: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          animation: 'slideUp 0.3s ease',
+        }}>
+          <div style={{ color: '#ef4444' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div>
+            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: 'white' }}>Error al guardar</p>
+            <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)' }}>Verifica tu conexión a internet</p>
+          </div>
+          <button onClick={() => setSaveError(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginLeft: '8px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
       `}</style>
 
       {showShareModal && (

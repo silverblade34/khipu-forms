@@ -94,6 +94,7 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
   const [forms, setForms] = useState<Form[]>(initialForms);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteForm, setConfirmDeleteForm] = useState<Form | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [shareForm, setShareForm] = useState<Form | null>(null);
 
@@ -113,11 +114,11 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
   }
 
   async function handleDelete(formId: string) {
-    if (!confirm('¿Eliminar este formulario? Esta acción no se puede deshacer.')) return;
     setDeletingId(formId);
     try {
       await fetch(`/api/forms/${formId}`, { method: 'DELETE' });
       setForms(forms.filter((f) => f.id !== formId));
+      setConfirmDeleteForm(null);
     } finally {
       setDeletingId(null);
     }
@@ -181,12 +182,46 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
     );
   };
 
+  const DeleteModal = () => {
+    if (!confirmDeleteForm) return null;
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(12px)', zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setConfirmDeleteForm(null)}>
+        <div style={{ background: '#111113', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '24px', padding: '32px', maxWidth: '400px', width: '100%', position: 'relative', boxShadow: '0 25px 50px rgba(0,0,0,0.6)' }} className="animate-scale-in" onClick={(e) => e.stopPropagation()}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#ef4444' }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </div>
+            <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>¿Eliminar formulario?</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+              Estás por eliminar <strong style={{ color: 'white' }}>"{confirmDeleteForm.title}"</strong>. Esta acción es permanente y no se puede deshacer.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={() => setConfirmDeleteForm(null)} className="btn btn-ghost" style={{ flex: 1, height: '48px', borderRadius: '14px' }}>
+              Cancelar
+            </button>
+            <button 
+              onClick={() => handleDelete(confirmDeleteForm.id)} 
+              disabled={deletingId === confirmDeleteForm.id}
+              className="btn btn-primary" 
+              style={{ flex: 1, height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg, #ef4444, #dc2626)', border: 'none', color: 'white', fontWeight: '700' }}
+            >
+              {deletingId === confirmDeleteForm.id ? <IconSpinner /> : 'Sí, eliminar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const userName = isGuest ? 'Invitado' : (user.name || user.email.split('@')[0]);
   const userInitial = isGuest ? null : (user.name?.[0] || user.email[0]).toUpperCase();
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
       <ShareModal />
+      <DeleteModal />
       {/* Top nav */}
       <header style={{
         borderBottom: '1px solid var(--border)',
@@ -400,7 +435,7 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
                       Compartir
                     </button>
                     <button
-                      onClick={() => handleDelete(form.id)}
+                      onClick={() => setConfirmDeleteForm(form)}
                       disabled={deletingId === form.id}
                       className="btn btn-ghost btn-sm"
                       title="Eliminar"
