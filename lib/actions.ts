@@ -65,11 +65,26 @@ export async function createGuestUser(): Promise<User> {
 export async function createForm(userId: string, data: {
   title?: string;
   description?: string;
+  presentation_mode?: 'classic' | 'cards' | 'duolingo';
+  is_quiz?: boolean;
+  gamification?: boolean;
+  show_hints?: boolean;
+  initial_lives?: number;
 }): Promise<Form> {
   const form = await queryOne<Form>(
-    `INSERT INTO forms (id, user_id, title, description)
-     VALUES ($1, $2, $3, $4) RETURNING *`,
-    [uuidv4(), userId, data.title ?? 'Formulario sin título', data.description ?? null]
+    `INSERT INTO forms (id, user_id, title, description, presentation_mode, is_quiz, gamification, show_hints, initial_lives)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+    [
+      uuidv4(), 
+      userId, 
+      data.title ?? 'Formulario sin título', 
+      data.description ?? null,
+      data.presentation_mode ?? 'classic',
+      data.is_quiz ?? false,
+      data.gamification ?? false,
+      data.show_hints ?? false,
+      data.initial_lives ?? 3
+    ]
   );
   if (!form) throw new Error('Failed to create form');
   return form;

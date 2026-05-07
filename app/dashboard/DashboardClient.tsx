@@ -133,11 +133,14 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       mode: 'duolingo',
       gamification: true,
       isQuiz: true,
+      showHints: true,
       lives: 3,
       fields: [
         { label: '¿Cuál es el elemento químico más abundante en el universo?', type: 'radio', required: true, order_index: 0, options: ['Hidrógeno', 'Helio', 'Oxígeno', 'Carbono'], correct_answer: 'Hidrógeno', hint: 'Es el primer elemento de la tabla periódica.', explanation: 'El hidrógeno constituye aproximadamente el 75% de la masa elemental del universo.', time_limit: 30 },
         { label: 'Identifica los planetas gaseosos del sistema solar', type: 'checkbox', required: true, order_index: 1, options: ['Júpiter', 'Marte', 'Saturno', 'Tierra'], correct_answer: 'Júpiter,Saturno', hint: 'Son los más grandes y no tienen superficie sólida.', time_limit: 45 },
-        { label: '¿Quién propuso la teoría de la relatividad?', type: 'select', required: true, order_index: 2, options: ['Isaac Newton', 'Albert Einstein', 'Stephen Hawking'], correct_answer: 'Albert Einstein', time_limit: 20 }
+        { label: '¿Quién propuso la teoría de la relatividad?', type: 'select', required: true, order_index: 2, options: ['Isaac Newton', 'Albert Einstein', 'Stephen Hawking'], correct_answer: 'Albert Einstein', hint: 'Un genio alemán con un peinado icónico.', time_limit: 20 },
+        { label: 'La velocidad de la luz es mayor que la del sonido.', type: 'radio', required: true, order_index: 3, options: ['Verdadero', 'Falso'], correct_answer: 'Verdadero', hint: 'Piensa en un rayo y el trueno.', time_limit: 10 },
+        { label: '¿En qué año el hombre llegó a la Luna?', type: 'radio', required: true, order_index: 4, options: ['1969', '1955', '1975', '1980'], correct_answer: '1969', hint: 'Fue durante la década de los 60.', explanation: 'Apolo 11 fue la misión espacial que llevó a los primeros humanos a la Luna.', time_limit: 30 }
       ]
     },
     {
@@ -148,10 +151,13 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       mode: 'classic',
       gamification: false,
       isQuiz: false,
+      showHints: false,
       fields: [
         { label: '¿Cómo calificaría la rapidez de nuestro soporte?', type: 'select', required: true, order_index: 0, options: ['Excelente', 'Bueno', 'Regular', 'Deficiente'] },
         { label: '¿Recomendaría nuestro servicio a un colega?', type: 'radio', required: true, order_index: 1, options: ['Totalmente', 'Probablemente', 'No estoy seguro', 'No'] },
-        { label: '¿Qué funcionalidad añadiría en la próxima versión?', type: 'textarea', required: false, order_index: 2, options: [] }
+        { label: '¿Qué funcionalidad añadiría en la próxima versión?', type: 'textarea', required: false, order_index: 2, options: [] },
+        { label: '¿Qué tan intuitiva es nuestra interfaz?', type: 'radio', required: true, order_index: 3, options: ['Muy intuitiva', 'Normal', 'Difícil de usar'] },
+        { label: 'Comentarios adicionales sobre su experiencia', type: 'textarea', required: false, order_index: 4, options: [] }
       ]
     },
     {
@@ -162,10 +168,13 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       mode: 'cards',
       gamification: false,
       isQuiz: false,
+      showHints: false,
       fields: [
         { label: 'Nombre y Apellido', type: 'text', required: true, order_index: 0, options: [] },
         { label: 'Correo corporativo', type: 'email', required: true, order_index: 1, options: [] },
-        { label: 'Tamaño de su equipo', type: 'radio', required: true, order_index: 2, options: ['1-10', '11-50', '50+'] }
+        { label: 'Tamaño de su equipo', type: 'radio', required: true, order_index: 2, options: ['1-10', '11-50', '50+'] },
+        { label: 'Industria de su empresa', type: 'select', required: true, order_index: 3, options: ['Tecnología', 'Educación', 'Salud', 'Finanzas', 'Otros'] },
+        { label: '¿Desea agendar una demo personalizada?', type: 'radio', required: true, order_index: 4, options: ['Sí, por favor', 'No por ahora'] }
       ]
     },
     {
@@ -176,21 +185,23 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       mode: 'duolingo',
       gamification: true,
       isQuiz: true,
+      showHints: true,
       lives: 5,
       fields: [
         { label: '¿En qué ciudad se encuentran los Jardines Colgantes?', type: 'radio', required: true, order_index: 0, options: ['Babilonia', 'Roma', 'Atenas'], correct_answer: 'Babilonia', hint: 'Fue una de las 7 maravillas antiguas.', explanation: 'Babilonia estaba situada en la actual Irak.', time_limit: 15 },
-        { label: 'Inventores famosos', type: 'checkbox', required: true, order_index: 1, options: ['Nikola Tesla', 'Leonardo da Vinci', 'Steve Jobs', 'Batman'], correct_answer: 'Nikola Tesla,Leonardo da Vinci', time_limit: 20 }
+        { label: 'Inventores famosos', type: 'checkbox', required: true, order_index: 1, options: ['Nikola Tesla', 'Leonardo da Vinci', 'Steve Jobs', 'Batman'], correct_answer: 'Nikola Tesla,Leonardo da Vinci', hint: 'Tesla trabajó con electricidad y Da Vinci pintó la Mona Lisa.', time_limit: 20 },
+        { label: '¿Qué país tiene forma de bota?', type: 'radio', required: true, order_index: 2, options: ['Italia', 'España', 'Francia', 'Grecia'], correct_answer: 'Italia', hint: 'Está en el sur de Europa.', time_limit: 10 },
+        { label: '¿Cuál es el océano más grande del mundo?', type: 'select', required: true, order_index: 3, options: ['Pacífico', 'Atlántico', 'Índico', 'Ártico'], correct_answer: 'Pacífico', hint: 'Baña las costas de América y Asia.', time_limit: 15 },
+        { label: '¿Quién escribió Don Quijote de la Mancha?', type: 'radio', required: true, order_index: 4, options: ['Miguel de Cervantes', 'García Márquez', 'Shakespeare'], correct_answer: 'Miguel de Cervantes', hint: 'El manco de Lepanto.', time_limit: 20 }
       ]
     }
   ];
 
   async function handleCreateFromTemplate(template: any) {
     if (creatingId) return;
-    console.log('🚀 Iniciando creación desde plantilla:', template.title);
+    console.log('🚀 Iniciando creación avanzada:', template.title);
     setCreatingId(template.id);
     try {
-      // Step 1: Create Form
-      console.log('📡 Paso 1: Creando formulario base...');
       const res = await fetch('/api/forms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -199,30 +210,25 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
           presentation_mode: template.mode,
           gamification: template.gamification,
           is_quiz: template.isQuiz,
+          show_hints: template.showHints,
           initial_lives: template.lives
         }),
       });
-      if (!res.ok) throw new Error(`Error al crear formulario: ${res.status}`);
+      if (!res.ok) throw new Error(`Error Form: ${res.status}`);
       const form = await res.json();
-      console.log('✅ Formulario creado con ID:', form.id);
+      console.log('✅ Formulario persistido con éxito:', form.presentation_mode);
       
-      // Step 2: Create Fields
-      console.log('📡 Paso 2: Inyectando campos dinámicos...', template.fields);
       const fieldsRes = await fetch(`/api/forms/${form.id}/fields`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields: template.fields }),
       });
-      if (!fieldsRes.ok) {
-        const errorData = await fieldsRes.json();
-        console.error('❌ Error del servidor en campos:', errorData);
-        throw new Error(`Error al crear campos: ${fieldsRes.status}`);
-      }
-      console.log('✅ Campos inyectados con éxito');
+      if (!fieldsRes.ok) throw new Error(`Error Fields: ${fieldsRes.status}`);
+      console.log('✅ Muestra de población (5 campos) inyectada');
       
       router.push(`/builder/${form.id}`);
     } catch (e) {
-      console.error('💥 Error fatal en handleCreateFromTemplate:', e);
+      console.error('💥 Fallo en creación:', e);
       setCreatingId(null);
     }
   }
@@ -489,12 +495,23 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
               </div>
               
               {/* Educational Chalkboard Section */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', flex: '1.2', minWidth: '340px' }}>
+              <div style={{ display: 'flex', gap: '16px', flex: '1.2', minWidth: '340px', flexDirection: 'row', alignItems: 'flex-end' }} className="llama-lesson-container">
+                <style>{`
+                  @media (max-width: 768px) {
+                    .llama-lesson-container {
+                      flex-direction: column-reverse !important;
+                      align-items: center !important;
+                    }
+                    .chalkboard-container {
+                      width: 100% !important;
+                    }
+                  }
+                `}</style>
                 <div style={{ width: '110px', height: '110px', flexShrink: 0, position: 'relative' }}>
                   <img src="/llama-teacher.png" alt="Llama Teacher" style={{ width: '100%', height: '100%', objectFit: 'contain' }} className="animate-bounce-slow" />
                 </div>
                 
-                <div style={{ 
+                <div className="chalkboard-container" style={{ 
                   flex: 1, 
                   background: '#1a3c34', // Chalkboard Green
                   border: '8px solid #4a3728', // Wood Frame

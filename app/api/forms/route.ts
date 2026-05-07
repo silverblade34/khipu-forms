@@ -18,6 +18,11 @@ export async function POST(request: NextRequest) {
   const form = await createForm(session.id, {
     title: body.title || 'Formulario sin título',
     description: body.description,
+    presentation_mode: body.presentation_mode,
+    is_quiz: body.is_quiz,
+    gamification: body.gamification,
+    show_hints: body.show_hints,
+    initial_lives: body.initial_lives
   });
 
   return NextResponse.json(form, { status: 201 });
