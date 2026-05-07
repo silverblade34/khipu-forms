@@ -135,9 +135,9 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       isQuiz: true,
       lives: 3,
       fields: [
-        { label: '¿Cuál es el elemento químico más abundante en el universo?', type: 'radio', options: ['Hidrógeno', 'Helio', 'Oxígeno', 'Carbono'], correct_answer: 'Hidrógeno', hint: 'Es el primer elemento de la tabla periódica.', explanation: 'El hidrógeno constituye aproximadamente el 75% de la masa elemental del universo.' },
-        { label: 'Identifica los planetas gaseosos del sistema solar', type: 'checkbox', options: ['Júpiter', 'Marte', 'Saturno', 'Tierra'], correct_answer: 'Júpiter,Saturno', hint: 'Son los más grandes y no tienen superficie sólida.' },
-        { label: '¿Quién propuso la teoría de la relatividad?', type: 'select', options: ['Isaac Newton', 'Albert Einstein', 'Stephen Hawking'], correct_answer: 'Albert Einstein' }
+        { label: '¿Cuál es el elemento químico más abundante en el universo?', type: 'radio', required: true, order_index: 0, options: ['Hidrógeno', 'Helio', 'Oxígeno', 'Carbono'], correct_answer: 'Hidrógeno', hint: 'Es el primer elemento de la tabla periódica.', explanation: 'El hidrógeno constituye aproximadamente el 75% de la masa elemental del universo.' },
+        { label: 'Identifica los planetas gaseosos del sistema solar', type: 'checkbox', required: true, order_index: 1, options: ['Júpiter', 'Marte', 'Saturno', 'Tierra'], correct_answer: 'Júpiter,Saturno', hint: 'Son los más grandes y no tienen superficie sólida.' },
+        { label: '¿Quién propuso la teoría de la relatividad?', type: 'select', required: true, order_index: 2, options: ['Isaac Newton', 'Albert Einstein', 'Stephen Hawking'], correct_answer: 'Albert Einstein' }
       ]
     },
     {
@@ -149,9 +149,9 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       gamification: false,
       isQuiz: false,
       fields: [
-        { label: '¿Cómo calificaría la rapidez de nuestro soporte?', type: 'select', options: ['Excelente', 'Bueno', 'Regular', 'Deficiente'] },
-        { label: '¿Recomendaría nuestro servicio a un colega?', type: 'radio', options: ['Totalmente', 'Probablemente', 'No estoy seguro', 'No'] },
-        { label: '¿Qué funcionalidad añadiría en la próxima versión?', type: 'textarea' }
+        { label: '¿Cómo calificaría la rapidez de nuestro soporte?', type: 'select', required: true, order_index: 0, options: ['Excelente', 'Bueno', 'Regular', 'Deficiente'] },
+        { label: '¿Recomendaría nuestro servicio a un colega?', type: 'radio', required: true, order_index: 1, options: ['Totalmente', 'Probablemente', 'No estoy seguro', 'No'] },
+        { label: '¿Qué funcionalidad añadiría en la próxima versión?', type: 'textarea', required: false, order_index: 2, options: [] }
       ]
     },
     {
@@ -163,9 +163,9 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       gamification: false,
       isQuiz: false,
       fields: [
-        { label: 'Nombre y Apellido', type: 'text', required: true },
-        { label: 'Correo corporativo', type: 'email', required: true },
-        { label: 'Tamaño de su equipo', type: 'radio', options: ['1-10', '11-50', '50+'] }
+        { label: 'Nombre y Apellido', type: 'text', required: true, order_index: 0, options: [] },
+        { label: 'Correo corporativo', type: 'email', required: true, order_index: 1, options: [] },
+        { label: 'Tamaño de su equipo', type: 'radio', required: true, order_index: 2, options: ['1-10', '11-50', '50+'] }
       ]
     },
     {
@@ -178,16 +178,19 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       isQuiz: true,
       lives: 5,
       fields: [
-        { label: '¿En qué ciudad se encuentran los Jardines Colgantes?', type: 'radio', options: ['Babilonia', 'Roma', 'Atenas'], correct_answer: 'Babilonia', hint: 'Fue una de las 7 maravillas antiguas.', explanation: 'Babilonia estaba situada en la actual Irak.' },
-        { label: 'Inventores famosos', type: 'checkbox', options: ['Nikola Tesla', 'Leonardo da Vinci', 'Steve Jobs', 'Batman'], correct_answer: 'Nikola Tesla,Leonardo da Vinci' }
+        { label: '¿En qué ciudad se encuentran los Jardines Colgantes?', type: 'radio', required: true, order_index: 0, options: ['Babilonia', 'Roma', 'Atenas'], correct_answer: 'Babilonia', hint: 'Fue una de las 7 maravillas antiguas.', explanation: 'Babilonia estaba situada en la actual Irak.' },
+        { label: 'Inventores famosos', type: 'checkbox', required: true, order_index: 1, options: ['Nikola Tesla', 'Leonardo da Vinci', 'Steve Jobs', 'Batman'], correct_answer: 'Nikola Tesla,Leonardo da Vinci' }
       ]
     }
   ];
 
   async function handleCreateFromTemplate(template: any) {
     if (creatingId) return;
+    console.log('🚀 Iniciando creación desde plantilla:', template.title);
     setCreatingId(template.id);
     try {
+      // Step 1: Create Form
+      console.log('📡 Paso 1: Creando formulario base...');
       const res = await fetch('/api/forms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -199,18 +202,27 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
           initial_lives: template.lives
         }),
       });
+      if (!res.ok) throw new Error(`Error al crear formulario: ${res.status}`);
       const form = await res.json();
+      console.log('✅ Formulario creado con ID:', form.id);
       
-      // Create all fields at once using PUT
-      await fetch(`/api/forms/${form.id}/fields`, {
+      // Step 2: Create Fields
+      console.log('📡 Paso 2: Inyectando campos dinámicos...', template.fields);
+      const fieldsRes = await fetch(`/api/forms/${form.id}/fields`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields: template.fields }),
       });
+      if (!fieldsRes.ok) {
+        const errorData = await fieldsRes.json();
+        console.error('❌ Error del servidor en campos:', errorData);
+        throw new Error(`Error al crear campos: ${fieldsRes.status}`);
+      }
+      console.log('✅ Campos inyectados con éxito');
       
       router.push(`/builder/${form.id}`);
     } catch (e) {
-      console.error(e);
+      console.error('💥 Error fatal en handleCreateFromTemplate:', e);
       setCreatingId(null);
     }
   }
@@ -349,6 +361,27 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
     }}>
       <ShareModal />
       <DeleteModal />
+      
+      {/* Construction Modal */}
+      {!!creatingId && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#111113', border: '1px solid var(--border)', borderRadius: '32px', padding: '48px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }} className="animate-scale-in">
+            <div style={{ width: '140px', height: '140px', margin: '0 auto 24px', position: 'relative' }}>
+              <div style={{ position: 'absolute', inset: 0, border: '4px solid var(--accent)', borderRadius: '50%', borderTopColor: 'transparent', animation: 'spin 1.5s linear infinite' }} />
+              <img src="/llama-happy.png" alt="Building" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '20px' }} className="animate-bounce" />
+            </div>
+            <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'white', marginBottom: '12px', letterSpacing: '-0.02em' }}>Construyendo tu formulario</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '0' }}>
+              La Llama Khipu está inyectando los campos y configurando la IA para tu nueva plantilla...
+            </p>
+            <div style={{ marginTop: '24px', display: 'flex', gap: '4px', justifyContent: 'center' }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)', opacity: 0.3, animation: 'pulse 1s infinite', animationDelay: `${i * 0.2}s` }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       {/* Top nav */}
       <header style={{
         borderBottom: '1px solid var(--border)',
