@@ -13,9 +13,10 @@ export async function GET(
   if (!form.is_public) return NextResponse.json({ error: 'Form is private' }, { status: 403 });
 
   const fields = await getFormFields(id);
-
-  // Strip correct_answer from public response (don't expose answers)
-  const safeFields = fields.map((f) => ({ ...f, correct_answer: null }));
+  const safeFields = fields.map((f) => ({
+    ...f,
+    correct_answer: (form.presentation_mode === 'duolingo' || form.presentation_mode === 'cards') ? f.correct_answer : null
+  }));
 
   return NextResponse.json({ form, fields: safeFields });
 }
