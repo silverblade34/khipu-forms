@@ -29,6 +29,7 @@ export interface Form {
   presentation_mode: 'classic' | 'cards' | 'duolingo';
   show_hints: boolean;
   gamification: boolean;
+  initial_lives: number;
   created_at: string;
   updated_at: string;
   field_count?: number;

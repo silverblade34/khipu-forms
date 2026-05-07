@@ -53,6 +53,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
     store.setPresentationMode((form.presentation_mode as 'classic' | 'cards' | 'duolingo') ?? 'classic');
     store.setShowHints(form.show_hints ?? false);
     store.setGamification(form.gamification ?? false);
+    store.setInitialLives(form.initial_lives ?? 3);
     store.setFields(initialFields);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.id]);
@@ -78,6 +79,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
           presentation_mode: store.presentationMode,
           show_hints: store.showHints,
           gamification: store.gamification,
+          initial_lives: store.initialLives,
         }),
       });
       await fetch(`/api/forms/${form.id}/fields`, {
@@ -311,14 +313,6 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
                 </div>
               )}
 
-              {/* Toggle: Step-by-Step */}
-              <ToggleRow
-                label="Navegación paso a paso"
-                description="Habilita la transición automática entre campos"
-                value={store.stepByStep}
-                onChange={() => store.setStepByStep(!store.stepByStep)}
-              />
-
               {/* Toggle: Show Hints */}
               <ToggleRow
                 label="💡 Habilitar pistas de ayuda"
@@ -334,8 +328,20 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
                 onChange={() => store.setGamification(!store.gamification)}
               />
 
-
-              {/* Informed Consent */}
+              {store.gamification && (
+                <div className="field-group animate-fade-in" style={{ padding: '0 12px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', marginTop: '-12px', marginBottom: '16px' }}>
+                  <label className="label" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Vidas iniciales</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input 
+                      type="range" min="1" max="10" 
+                      value={store.initialLives} 
+                      onChange={(e) => store.setInitialLives(parseInt(e.target.value))}
+                      style={{ flex: 1, accentColor: 'var(--accent)' }}
+                    />
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'white', width: '24px' }}>{store.initialLives}</span>
+                  </div>
+                </div>
+              )}              {/* Informed Consent */}
               <div className="field-group">
                 <label className="label">Consentimiento Informado (Investigadores)</label>
                 <textarea

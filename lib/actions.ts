@@ -108,6 +108,7 @@ export async function updateForm(formId: string, userId: string, data: {
   presentation_mode?: 'classic' | 'cards' | 'duolingo';
   show_hints?: boolean;
   gamification?: boolean;
+  initial_lives?: number;
 }): Promise<Form | null> {
   const form = await queryOne<Form>('SELECT id FROM forms WHERE id = $1 AND user_id = $2', [formId, userId]);
   if (!form) return null;
@@ -127,8 +128,9 @@ export async function updateForm(formId: string, userId: string, data: {
       presentation_mode = COALESCE($11, presentation_mode),
       show_hints = COALESCE($12, show_hints),
       gamification = COALESCE($13, gamification),
+      initial_lives = COALESCE($14, initial_lives),
       updated_at = NOW()
-     WHERE id = $14 AND user_id = $15 RETURNING *`,
+     WHERE id = $15 AND user_id = $16 RETURNING *`,
     [
       data.title ?? 'Formulario sin título',
       data.description ?? null,
@@ -143,6 +145,7 @@ export async function updateForm(formId: string, userId: string, data: {
       data.presentation_mode ?? null,
       data.show_hints ?? null,
       data.gamification ?? null,
+      data.initial_lives ?? null,
       formId,
       userId,
     ]

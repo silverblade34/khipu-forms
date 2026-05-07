@@ -21,7 +21,8 @@ const TopBar = ({
   answered, 
   progress, 
   timeLeft,
-  showGamification
+  showGamification,
+  maxLives
 }: { 
   formTitle: string;
   currentMode: string;
@@ -34,6 +35,7 @@ const TopBar = ({
   progress: number;
   timeLeft: number | null;
   showGamification: boolean;
+  maxLives: number;
 }) => (
   <>
     <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.8)', backdropFilter: 'blur(15px)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
@@ -44,7 +46,7 @@ const TopBar = ({
           <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>🔥 {streak}</span>
           <span style={{ fontSize: '12px', fontWeight: '700', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '4px' }}>⭐ {points}</span>
           <div style={{ display: 'flex', gap: '3px' }}>
-            {[...Array(3)].map((_, i) => <span key={i} style={{ fontSize: '14px', opacity: i < lives ? 1 : 0.2 }}>❤️</span>)}
+            {[...Array(maxLives)].map((_, i) => <span key={i} style={{ fontSize: '14px', opacity: i < lives ? 1 : 0.2 }}>❤️</span>)}
           </div>
         </div>
       )}
@@ -108,6 +110,7 @@ export default function PublicFormPage() {
         if (!d.form.access_code) setAccessGranted(true);
         if (!d.form.require_email) setEmailGranted(true);
         if (!d.form.informed_consent) setConsentAccepted(true);
+        setLives(d.form.initial_lives ?? 3);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -154,7 +157,7 @@ export default function PublicFormPage() {
     
     // Only enforce required if we haven't given feedback yet
     if (!feedback && currentField.required && !val.trim()) {
-      setValidationErrors({ ...validationErrors, [currentField.id]: 'Este campo es obligatorio' });
+      setValidationErrors({ ...validationErrors, [currentField.id]: 'Esta pregunta es obligatoria' });
       return;
     }
     
@@ -220,7 +223,7 @@ export default function PublicFormPage() {
     const errors: Record<string, string> = {};
     for (const field of data.fields) {
       const val = answers[field.id] || '';
-      if (field.required && !val.trim()) errors[field.id] = 'Este campo es obligatorio';
+      if (field.required && !val.trim()) errors[field.id] = 'Esta pregunta es obligatoria';
       if (field.type === 'email' && val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) errors[field.id] = 'Email inválido';
       if (field.type === 'number' && val && isNaN(Number(val))) errors[field.id] = 'Número inválido';
     }
@@ -322,12 +325,10 @@ export default function PublicFormPage() {
                   })}
                 </div>
               )}
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                <button onClick={() => { setSubmitted(false); setAnswers({}); setQuizResult(null); }} className="btn btn-secondary">
-                  Intentar de nuevo
-                </button>
-                <a href="/" className="btn btn-ghost" style={{ textDecoration: 'none', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  Crear mi formulario →
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <a href="/" className="btn btn-ghost" style={{ textDecoration: 'none', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '12px', opacity: 0.5 }} />
+                  <span>Crear mi propio formulario →</span>
                 </a>
               </div>
             </div>
@@ -336,9 +337,11 @@ export default function PublicFormPage() {
               <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--success-dim)', border: '2px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px' }}>✓</div>
               <h2 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: '8px' }}>¡Respuesta enviada!</h2>
               <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '28px' }}>Tu respuesta ha sido registrada correctamente.</p>
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button onClick={() => { setSubmitted(false); setAnswers({}); }} className="btn btn-secondary">Enviar otra respuesta</button>
-                <a href="/" className="btn btn-ghost" style={{ textDecoration: 'none', fontSize: '12px', color: 'var(--text-muted)' }}>Crear mi formulario →</a>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <a href="/" className="btn btn-ghost" style={{ textDecoration: 'none', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '12px', opacity: 0.5 }} />
+                  <span>Crear mi propio formulario →</span>
+                </a>
               </div>
             </div>
           )}
@@ -471,6 +474,7 @@ export default function PublicFormPage() {
         progress={progress}
         timeLeft={timeLeft}
         showGamification={data.form.gamification}
+        maxLives={data.form.initial_lives ?? 3}
       />
       <div style={{ maxWidth: '640px', width: '100%', margin: '0 auto', padding: '40px 20px 80px', position: 'relative', zIndex: 1 }}>
         <div style={{ marginBottom: '32px', padding: '0 4px' }} className="animate-fade-in">
@@ -518,6 +522,7 @@ export default function PublicFormPage() {
         progress={progress}
         timeLeft={timeLeft}
         showGamification={data.form.gamification}
+        maxLives={data.form.initial_lives ?? 3}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', position: 'relative', zIndex: 1 }}>
         {/* Step counter */}
@@ -581,7 +586,7 @@ export default function PublicFormPage() {
   );
 
   // ── DUOLINGO mode ─────────────────────────────────────────────────────────────
-  const isGameOver = lives <= 0;
+  const isGameOver = data.form.gamification && lives <= 0;
   return (
     <div className="public-form-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div className="mesh-gradient" style={{ opacity: feedback?.correct ? 0.6 : feedback ? 0.3 : 1, transition: 'opacity 0.3s' }} />
@@ -597,6 +602,7 @@ export default function PublicFormPage() {
         progress={progress}
         timeLeft={timeLeft}
         showGamification={data.form.gamification}
+        maxLives={data.form.initial_lives ?? 3}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', position: 'relative', zIndex: 1 }}>
@@ -682,7 +688,7 @@ export default function PublicFormPage() {
                     onClick={() => {
                       const val = answers[field.id] || '';
                       if (field.required && !val.trim()) {
-                        setValidationErrors({ ...validationErrors, [field.id]: 'Este campo es obligatorio' });
+                        setValidationErrors({ ...validationErrors, [field.id]: 'Esta pregunta es obligatoria' });
                         return;
                       }
                       checkAnswer(field.id, val);

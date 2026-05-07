@@ -19,6 +19,7 @@ interface BuilderState {
   presentationMode: 'classic' | 'cards' | 'duolingo';
   showHints: boolean;
   gamification: boolean;
+  initialLives: number;
   fields: FormField[];
   isDirty: boolean;
   isSaving: boolean;
@@ -38,6 +39,7 @@ interface BuilderState {
   setPresentationMode: (v: 'classic' | 'cards' | 'duolingo') => void;
   setShowHints: (v: boolean) => void;
   setGamification: (v: boolean) => void;
+  setInitialLives: (v: number) => void;
   setFields: (fields: FormField[]) => void;
   addField: (type: FormField['type']) => void;
   removeField: (id: string) => void;
@@ -64,6 +66,7 @@ const initialState = {
   presentationMode: 'classic' as const,
   showHints: false,
   gamification: false,
+  initialLives: 3,
   fields: [],
   isDirty: false,
   isSaving: false,
@@ -86,6 +89,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setPresentationMode: (presentationMode) => set({ presentationMode, isDirty: true }),
   setShowHints: (showHints) => set({ showHints, isDirty: true }),
   setGamification: (gamification) => set({ gamification, isDirty: true }),
+  setInitialLives: (initialLives) => set({ initialLives, isDirty: true }),
   setFields: (fields) => set({ fields, isDirty: false }),
 
   addField: (type) => {
