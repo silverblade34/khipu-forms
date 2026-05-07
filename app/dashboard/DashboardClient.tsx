@@ -97,6 +97,100 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
   const [confirmDeleteForm, setConfirmDeleteForm] = useState<Form | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [shareForm, setShareForm] = useState<Form | null>(null);
+  const [activeTab, setActiveTab] = useState<'my-forms' | 'templates'>('my-forms');
+
+  const templates = [
+    {
+      id: 'template-quiz',
+      title: 'Examen de Certificación',
+      description: 'Preguntas con tiempo, pistas y gamificación activa.',
+      icon: '🎯',
+      mode: 'duolingo',
+      gamification: true,
+      isQuiz: true,
+      lives: 3,
+      fields: [
+        { label: '¿Cuál es la capital de Francia? (Radio)', type: 'radio', options: ['París', 'Londres', 'Berlín'], correct_answer: 'París', hint: 'Es conocida como la ciudad de la luz.', explanation: 'París ha sido la capital desde el siglo X.' },
+        { label: 'Calcula: 15 x 3 (Casillas)', type: 'checkbox', options: ['45', '30', '60'], correct_answer: '45', hint: 'Suma 15 tres veces.' },
+        { label: 'Define la fotosíntesis (Lista)', type: 'select', options: ['Proceso de plantas', 'Proceso animal', 'Mineral'], correct_answer: 'Proceso de plantas' }
+      ]
+    },
+    {
+      id: 'template-survey',
+      title: 'Encuesta de Satisfacción',
+      description: 'Diseño clásico y formal para recolectar feedback profesional.',
+      icon: '📊',
+      mode: 'classic',
+      gamification: false,
+      isQuiz: false,
+      fields: [
+        { label: '¿Cómo calificaría nuestra atención? (Lista)', type: 'select', options: ['Excelente', 'Bueno', 'Regular', 'Malo'] },
+        { label: '¿Qué es lo que más le gustó del servicio? (Radio)', type: 'radio', options: ['Rapidez', 'Calidad', 'Precio'] },
+        { label: 'Sugerencias de mejora (Lista)', type: 'textarea' }
+      ]
+    },
+    {
+      id: 'template-leads',
+      title: 'Registro de Evento',
+      description: 'Experiencia fluida paso a paso ideal para móviles.',
+      icon: '🚀',
+      mode: 'cards',
+      gamification: false,
+      isQuiz: false,
+      fields: [
+        { label: 'Nombre completo (Lista)', type: 'text', required: true },
+        { label: 'Correo electrónico (Lista)', type: 'email', required: true },
+        { label: '¿Cómo se enteró de nosotros? (Radio)', type: 'radio', options: ['Redes Sociales', 'Amigos', 'Publicidad'] }
+      ]
+    },
+    {
+      id: 'template-trivia',
+      title: 'Trivia de Cultura Pop',
+      description: 'Pura diversión con rachas, puntos y nuestra mascota.',
+      icon: '🎮',
+      mode: 'duolingo',
+      gamification: true,
+      isQuiz: true,
+      lives: 5,
+      fields: [
+        { label: '¿En qué año se lanzó el primer iPhone? (Radio)', type: 'radio', options: ['2007', '2005', '2010'], correct_answer: '2007', hint: 'Fue presentado por Steve Jobs.', explanation: 'El iPhone cambió la telefonía en junio de 2007.' },
+        { label: 'Personajes de Star Wars (Casillas)', type: 'checkbox', options: ['Luke Skywalker', 'Batman', 'Darth Vader'], correct_answer: 'Luke Skywalker,Darth Vader' }
+      ]
+    }
+  ];
+
+  async function handleCreateFromTemplate(template: any) {
+    if (creating) return;
+    setCreating(true);
+    try {
+      const res = await fetch('/api/forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          title: template.title,
+          presentation_mode: template.mode,
+          gamification: template.gamification,
+          is_quiz: template.isQuiz,
+          initial_lives: template.lives
+        }),
+      });
+      const form = await res.json();
+      
+      // Add fields
+      for (const field of template.fields) {
+        await fetch(`/api/forms/${form.id}/fields`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(field),
+        });
+      }
+      
+      router.push(`/builder/${form.id}`);
+    } catch (e) {
+      console.error(e);
+      setCreating(false);
+    }
+  }
 
   async function handleCreateForm() {
     setCreating(true);
@@ -316,144 +410,112 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
 
       {/* Main content */}
       <main style={{ flex: 1, maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '32px 20px' }}>
-        {/* Page header */}
-        <div style={{
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          marginBottom: '28px', gap: '16px', flexWrap: 'wrap',
-        }}>
-          <div>
-            <h1 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', letterSpacing: '-0.02em', margin: 0 }}>
-              Mis formularios
-            </h1>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              {forms.length === 0 ? 'Crea tu primer formulario' : `${forms.length} formulario${forms.length !== 1 ? 's' : ''}`}
-            </p>
-          </div>
-          <button onClick={handleCreateForm} disabled={creating} className="btn btn-primary">
-            {creating ? <><IconSpinner /> Creando...</> : <><IconPlus /> Nuevo formulario</>}
+        {/* Navigation Tabs */}
+        <div style={{ display: 'flex', gap: '24px', borderBottom: '1px solid var(--border)', marginBottom: '32px' }}>
+          <button 
+            onClick={() => setActiveTab('my-forms')}
+            style={{ padding: '12px 4px', fontSize: '14px', fontWeight: '600', color: activeTab === 'my-forms' ? 'var(--accent)' : 'var(--text-muted)', borderBottom: `2px solid ${activeTab === 'my-forms' ? 'var(--accent)' : 'transparent'}`, background: 'none', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
+          >
+            Mis Formularios ({forms.length})
+          </button>
+          <button 
+            onClick={() => setActiveTab('templates')}
+            style={{ padding: '12px 4px', fontSize: '14px', fontWeight: '600', color: activeTab === 'templates' ? 'var(--accent)' : 'var(--text-muted)', borderBottom: `2px solid ${activeTab === 'templates' ? 'var(--accent)' : 'transparent'}`, background: 'none', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
+          >
+            Plantillas ✨
           </button>
         </div>
 
-        {/* Empty state */}
-        {forms.length === 0 && (
-          <div style={{
-            textAlign: 'center', padding: '80px 20px',
-            border: '1px dashed var(--border)', borderRadius: '16px',
-            background: 'var(--bg-secondary)',
-          }} className="animate-fade-in">
-            <div style={{
-              width: '52px', height: '52px', borderRadius: '14px', background: 'var(--accent-dim)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
-            }}>
-              <IconGrid />
+        {activeTab === 'templates' ? (
+          <div className="animate-fade-in">
+            <div style={{ marginBottom: '32px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'white', marginBottom: '8px', letterSpacing: '-0.02em' }}>Galería de Plantillas</h2>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Selecciona una base para empezar a crear tu formulario profesional en segundos.</p>
             </div>
-            <p style={{ fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px', fontSize: '15px' }}>
-              Sin formularios aún
-            </p>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.6' }}>
-              Crea tu primer formulario y empieza a recibir respuestas
-            </p>
-            <button onClick={handleCreateForm} disabled={creating} className="btn btn-primary">
-              {creating ? <><IconSpinner /> Creando...</> : 'Crear formulario'}
-            </button>
-          </div>
-        )}
-
-        {/* Forms grid */}
-        {forms.length > 0 && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '16px',
-          }}>
-            {forms.map((form, i) => {
-              const formattedDate = new Date(form.created_at).toLocaleDateString('es-PE', {
-                day: '2-digit', month: 'short', year: 'numeric',
-              });
-
-              return (
-                <div
-                  key={form.id}
-                  className="animate-fade-in"
-                  style={{
-                    background: 'var(--bg-secondary)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '12px',
-                    padding: '18px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '14px',
-                    transition: 'all 0.2s ease',
-                    animationDelay: `${i * 50}ms`,
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget;
-                    el.style.borderColor = 'var(--border-light)';
-                    el.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget;
-                    el.style.borderColor = 'var(--border)';
-                    el.style.transform = 'translateY(0)';
-                  }}
-                >
-                  {/* Title */}
-                  <Link href={`/builder/${form.id}`} style={{ textDecoration: 'none' }}>
-                    <h3 style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-primary)', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {form.title}
-                    </h3>
-                    {form.description && (
-                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const }}>
-                        {form.description}
-                      </p>
-                    )}
-                  </Link>
-
-                  {/* Stats */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{form.field_count ?? 0} campos</span>
-                    <span style={{ color: 'var(--border)', fontSize: '10px' }}>·</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{form.response_count ?? 0} respuestas</span>
-                    <span style={{ color: 'var(--border)', fontSize: '10px' }}>·</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{formattedDate}</span>
-                  </div>
-
-                  {/* Actions */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    paddingTop: '10px', borderTop: '1px solid var(--border)',
-                  }}>
-                    <Link href={`/builder/${form.id}`} className="btn btn-secondary btn-sm" style={{ textDecoration: 'none', flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <IconEdit /> Editar
-                    </Link>
-                    <Link href={`/responses/${form.id}`} className="btn btn-ghost btn-sm" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <IconBarChart />
-                    </Link>
-                    <button
-                      onClick={() => setShareForm(form)}
-                      className="btn btn-ghost btn-sm"
-                      title="Compartir y QR"
-                      style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
-                      Compartir
-                    </button>
-                    <button
-                      onClick={() => setConfirmDeleteForm(form)}
-                      disabled={deletingId === form.id}
-                      className="btn btn-ghost btn-sm"
-                      title="Eliminar"
-                      style={{ color: 'var(--error)' }}
-                    >
-                      {deletingId === form.id ? (
-                        <span style={{ width: '13px', height: '13px', border: '1.5px solid rgba(239,68,68,0.3)', borderTopColor: 'var(--error)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
-                      ) : <IconTrash />}
-                    </button>
-                  </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+              {templates.map((template) => (
+                <div key={template.id} className="public-form-card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', height: '100%', transition: 'all 0.3s', cursor: 'default', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
+                  <div style={{ fontSize: '40px', marginBottom: '20px' }}>{template.icon}</div>
+                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'white', marginBottom: '10px' }}>{template.title}</h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6', flex: 1, marginBottom: '28px' }}>{template.description}</p>
+                  <button 
+                    onClick={() => handleCreateFromTemplate(template)}
+                    disabled={creating}
+                    className="btn btn-primary" 
+                    style={{ width: '100%', height: '44px', fontSize: '14px', borderRadius: '12px', fontWeight: '700' }}
+                  >
+                    {creating ? <IconSpinner /> : 'Usar esta plantilla'}
+                  </button>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
+        ) : (
+          <>
+            {/* Page header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '28px', gap: '16px', flexWrap: 'wrap' }}>
+              <div>
+                <h1 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', letterSpacing: '-0.02em', margin: 0 }}>Mis formularios</h1>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>{forms.length === 0 ? 'Crea tu primer formulario' : `${forms.length} formulario${forms.length !== 1 ? 's' : ''}`}</p>
+              </div>
+              <button onClick={handleCreateForm} disabled={creating} className="btn btn-primary">
+                {creating ? <><IconSpinner /> Creando...</> : <><IconPlus /> Nuevo formulario</>}
+              </button>
+            </div>
+
+            {forms.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '80px 24px', background: 'rgba(255,255,255,0.02)', borderRadius: '32px', border: '2px dashed rgba(255,255,255,0.1)' }}>
+                <div style={{ fontSize: '48px', marginBottom: '20px' }}>✍️</div>
+                <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'white', marginBottom: '8px' }}>Aún no tienes formularios</h2>
+                <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '32px', maxWidth: '320px', margin: '0 auto 32px' }}>
+                  Crea tu primer formulario o usa una de nuestras plantillas para empezar.
+                </p>
+                <button onClick={handleCreateForm} className="btn btn-primary" style={{ padding: '0 32px', height: '48px', borderRadius: '16px' }}>
+                  Crear mi primer formulario
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                {forms.map((form) => (
+                  <div key={form.id} className="form-card animate-fade-in" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '24px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(124,106,247,0.1)', padding: '2px 8px', borderRadius: '6px', letterSpacing: '0.05em' }}>
+                            {form.presentation_mode}
+                          </span>
+                          {form.is_quiz && <span style={{ fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', color: '#f59e0b', background: 'rgba(245,158,11,0.1)', padding: '2px 8px', borderRadius: '6px' }}>Quiz</span>}
+                        </div>
+                        <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{form.title}</h3>
+                      </div>
+                      <button onClick={() => setConfirmDeleteForm(form)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', padding: '4px', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'} onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.15)'}>
+                        <IconTrash />
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <IconGrid /> {form.field_count || 0} campos
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                      <Link href={`/builder/${form.id}`} className="btn btn-secondary" style={{ padding: '0', height: '36px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        <IconEdit /> Editar
+                      </Link>
+                      <Link href={`/f/${form.id}`} target="_blank" className="btn btn-secondary" style={{ padding: '0', height: '36px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        <IconLink /> Ver
+                      </Link>
+                      <button onClick={() => setShareForm(form)} className="btn btn-primary" style={{ padding: '0', height: '36px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', borderRadius: '10px' }}>
+                        Compartir
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
 
