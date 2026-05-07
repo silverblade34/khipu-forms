@@ -169,14 +169,7 @@ export default function HomePage() {
           position: 'sticky', top: 0, zIndex: 10,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '30px', height: '30px', borderRadius: '8px', background: 'var(--accent)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: '700', fontSize: '14px',
-            }}>K</div>
-            <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-              Khipu Forms
-            </span>
+            <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '24px', width: 'auto' }} />
           </div>
 
           <div className="nav-desktop-links" style={{ alignItems: 'center', gap: '4px' }}>
@@ -375,11 +368,7 @@ export default function HomePage() {
           flexWrap: 'wrap', gap: '12px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '24px', height: '24px', borderRadius: '6px', background: 'var(--accent)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: '700', fontSize: '11px',
-            }}>K</div>
+            <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '20px', width: 'auto' }} />
             <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               Khipu Forms · forms.khipu.lat
             </span>

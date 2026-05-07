@@ -238,8 +238,8 @@ export default function PublicFormPage() {
   return (
     <div className="public-form-wrapper">
       {/* Header */}
-      <div style={{ borderBottom: '1px solid var(--border)', background: 'rgba(17,17,19,0.8)', backdropFilter: 'blur(12px)', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '13px', flexShrink: 0 }}>K</div>
+      <div style={{ borderBottom: '1px solid var(--border)', background: 'rgba(17,17,19,0.8)', backdropFilter: 'blur(12px)', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
+        <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '24px', width: 'auto', flexShrink: 0 }} />
         <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.form.title}</span>
         {total > 0 && (
           <span style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0 }}>{answered}/{total}</span>

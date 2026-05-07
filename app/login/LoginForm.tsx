@@ -143,13 +143,9 @@ export default function LoginForm({ initialError }: Props) {
           animation: 'fadeInOverlay 0.2s ease',
         }}>
           {/* Logo */}
-          <div style={{
-            width: '48px', height: '48px', borderRadius: '14px',
-            background: 'var(--accent)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontWeight: '700', fontSize: '22px',
-            marginBottom: '4px',
-          }}>K</div>
+          <div style={{ marginBottom: '4px' }}>
+            <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '32px', width: 'auto' }} />
+          </div>
 
           {/* Spinner */}
           <div style={{

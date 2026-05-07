@@ -153,12 +153,7 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '28px', height: '28px', borderRadius: '8px', background: 'var(--accent)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontSize: '13px', fontWeight: '700', flexShrink: 0,
-          }}>K</div>
-          <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-primary)' }}>Khipu Forms</span>
+          <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '24px', width: 'auto' }} />
         </div>
 
         {/* Right actions */}
