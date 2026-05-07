@@ -169,6 +169,7 @@ export async function saveFields(formId: string, userId: string, fields: Array<{
   required: boolean;
   options: string[];
   correct_answer?: string | null;
+  hint?: string | null;
   order_index: number;
 }>): Promise<FormField[]> {
   const form = await queryOne<Form>('SELECT id FROM forms WHERE id = $1 AND user_id = $2', [formId, userId]);
@@ -178,8 +179,8 @@ export async function saveFields(formId: string, userId: string, fields: Array<{
 
   for (const field of fields) {
     await query(
-      `INSERT INTO form_fields (id, form_id, type, label, required, options, correct_answer, order_index)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      `INSERT INTO form_fields (id, form_id, type, label, required, options, correct_answer, hint, order_index)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
         field.id || uuidv4(),
         formId,
@@ -188,6 +189,7 @@ export async function saveFields(formId: string, userId: string, fields: Array<{
         field.required,
         JSON.stringify(field.options || []),
         field.correct_answer ?? null,
+        field.hint ?? null,
         field.order_index,
       ]
     );

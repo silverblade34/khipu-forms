@@ -13,29 +13,29 @@ const features = [
     desc: 'Crea un formulario completo en menos de un minuto. Sin configuraciones complejas.',
   },
   {
-    icon: 'M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71',
-    title: 'Comparte con un link',
-    desc: 'Un URL limpio para compartir tu formulario con cualquier persona, en cualquier lugar.',
-  },
-  {
-    icon: 'M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3',
-    title: 'Respuestas en tiempo real',
-    desc: 'Ve cada respuesta al instante en tu dashboard. Exporta a CSV cuando quieras.',
+    icon: 'M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.77 3.77z',
+    title: 'Modos Interactivos',
+    desc: 'Elige entre vista Clásica, Tarjetas o modo Duolingo para tus formularios.',
   },
   {
     icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
-    title: 'Sin cuenta obligatoria',
-    desc: 'Empieza como invitado o conecta Google. Tú eliges cuándo registrarte.',
+    title: 'Consentimiento Informado',
+    desc: 'Ideal para investigadores: asegura que tus participantes acepten términos antes de responder.',
   },
   {
-    icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11',
-    title: '6 tipos de campo',
-    desc: 'Texto, email, número, selección, checkbox y más. Todo lo que necesitas en un MVP.',
+    icon: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z',
+    title: 'Gamificación Duolingo',
+    desc: 'Convierte tus quizes en juegos con puntos, vidas y rachas de aciertos en tiempo real.',
   },
   {
-    icon: 'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3',
-    title: 'Exporta tus datos',
-    desc: 'Descarga todas tus respuestas en formato CSV con un solo clic.',
+    icon: 'M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71',
+    title: 'Comparte con un link o QR',
+    desc: 'Genera URLs limpias o códigos QR para tus flyers universitarios e investigaciones.',
+  },
+  {
+    icon: 'M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3',
+    title: 'AI Insights',
+    desc: 'Analiza tus respuestas con IA para obtener resúmenes inteligentes y sentimientos.',
   },
 ];
 
@@ -293,6 +293,44 @@ export default function HomePage() {
                   <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.65' }}>
                     {f.desc}
                   </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        {/* Interactive Modes Section */}
+        <section style={{ padding: '80px 24px', background: 'linear-gradient(180deg, var(--bg-primary) 0%, rgba(124,106,247,0.05) 100%)' }}>
+          <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '60px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <h2 style={{ fontSize: 'clamp(24px, 5vw, 36px)', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.04em', marginBottom: '16px' }}>
+                Tres formas de <span style={{ color: 'var(--accent)' }}>interactuar</span>
+              </h2>
+              <p style={{ fontSize: '15px', color: 'var(--text-secondary)', maxWidth: '500px', margin: '0 auto' }}>
+                Diseñado para cada necesidad, desde encuestas académicas serias hasta evaluaciones escolares divertidas.
+              </p>
+            </div>
+
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+              gap: '24px' 
+            }}>
+              {[
+                { title: '📋 Modo Clásico', desc: 'La vista tradicional de lista. Ideal para encuestas de tesis o formularios extensos de investigación.', accent: false },
+                { title: '🃏 Modo Tarjetas', desc: 'Una pregunta a la vez. Reduce la fatiga visual y mejora la tasa de finalización.', accent: false },
+                { title: '🎮 Modo Duolingo', desc: 'Gamificación real: puntos, vidas, rachas y feedback instantáneo. Perfecto para profesores y quizzes.', accent: true },
+              ].map((m) => (
+                <div key={m.title} style={{ 
+                  padding: '32px', 
+                  borderRadius: '24px', 
+                  background: m.accent ? 'rgba(124,106,247,0.1)' : 'var(--bg-secondary)', 
+                  border: `1px solid ${m.accent ? 'var(--accent)' : 'var(--border)'}`,
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  {m.accent && <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--accent)', color: 'white', fontSize: '10px', fontWeight: '700', padding: '4px 8px', borderRadius: '8px', textTransform: 'uppercase' }}>Popular</div>}
+                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px' }}>{m.title}</h3>
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>{m.desc}</p>
                 </div>
               ))}
             </div>
