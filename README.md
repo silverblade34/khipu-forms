@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🦙 Khipu Forms - Smart SaaS Form Engine
 
-## Getting Started
+Khipu Forms es una plataforma SaaS de última generación diseñada para transformar la recolección de datos estática en una experiencia interactiva, gamificada y profesional. Ideal para investigadores, educadores y empresas que buscan un engagement superior en sus encuestas y exámenes.
 
-First, run the development server:
+![Khipu Banner](https://raw.githubusercontent.com/michellmarcosp/portafolio/main/khipu-forms/public/banner.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Características Principales
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🎮 Motor de Gamificación Avanzado (Interactive Pro)
+Khipu Forms no solo recolecta datos, enseña y entretiene.
+- **Sistema de Vidas (Initial Lives)**: Configura un límite de errores para exámenes de certificación.
+- **Rachas y Puntuación**: Recompensas visuales por respuestas correctas consecutivas.
+- **Feedback Inmediato**: La mascota "Llama Khipu" reacciona en tiempo real a las respuestas.
+- **Fundamentación Pedagógica**: Permite añadir explicaciones detalladas para cada respuesta correcta o incorrecta.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🎨 Modos de Presentación Dinámicos
+Adapta la visualización al propósito de tu formulario:
+- **Modo Clásico**: Vista tradicional de lista para encuestas rápidas.
+- **Modo Secuencial (Cards)**: Enfoque paso a paso para reducir la carga cognitiva.
+- **Modo Interactivo Pro**: Experiencia gamificada tipo Duolingo con feedback animado.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🛠️ Builder de Alto Nivel
+- **Organización por Acordeones**: Interfaz limpia que agrupa Preguntas, Configuración, Gamificación y Privacidad.
+- **Pistas Inteligentes (Hints)**: Inyecta pistas opcionales que el usuario puede desbloquear antes de responder.
+- **Temporizadores por Pregunta**: Control estricto de tiempo para validación de conocimientos.
 
-## Learn More
+### 📱 Diseño Mobile-First & Responsive
+- **Chalkboard Lesson System**: Interfaz de "Pizarra Educativa" que se adapta automáticamente a pantallas verticales.
+- **TopBar de Gamificación**: Visualización clara de racha, puntos y vidas en cualquier dispositivo.
+- **Temporizador en Tiempo Real**: Reloj tipo "pill" flotante con alertas de urgencia visual.
 
-To learn more about Next.js, take a look at the following resources:
+## 🏗️ Stack Tecnológico
+- **Frontend**: Next.js 14 (App Router), TypeScript, Vanilla CSS para diseño premium.
+- **Estado**: Zustand (Builder Store) para una edición en tiempo real sin latencia.
+- **Backend**: Next.js API Routes con persistencia en base de datos relacional.
+- **Diseño**: Sistema de diseño personalizado con enfoque en micro-animaciones y estética profesional.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📋 Resumen Funcional para Producción
+1. **Templates Inteligentes**: Galería de plantillas con 5+ preguntas pre-configuradas (Trivia, Lead Capture, NPS, Certificación).
+2. **Persistencia Total**: Los modos de presentación y flags de gamificación se sincronizan instantáneamente con la base de datos.
+3. **White Label Friendly**: Estructura lista para personalización de marca y logos (Informed Consent incluido).
+4. **Validación Robusta**: Manejo de códigos de acceso, emails obligatorios y duplicidad de respuestas.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Instalación y Desarrollo
 
-## Deploy on Vercel
+1. Clona el repositorio
+2. Instala dependencias:
+   ```bash
+   npm install
+   ```
+3. Configura tus variables de entorno (.env)
+4. Inicia el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Desarrollado con ❤️ por **Michell Marcos** para la próxima generación de recolección de datos.
