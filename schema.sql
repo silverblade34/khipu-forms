@@ -136,6 +136,9 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='forms' AND column_name='show_hints') THEN
     ALTER TABLE forms ADD COLUMN show_hints BOOLEAN DEFAULT false;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='forms' AND column_name='gamification') THEN
+    ALTER TABLE forms ADD COLUMN gamification BOOLEAN DEFAULT false;
+  END IF;
   -- form_fields table
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='form_fields' AND column_name='correct_answer') THEN
     ALTER TABLE form_fields ADD COLUMN correct_answer TEXT;

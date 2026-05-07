@@ -52,6 +52,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
     store.setInformedConsent(form.informed_consent || '');
     store.setPresentationMode((form.presentation_mode as 'classic' | 'cards' | 'duolingo') ?? 'classic');
     store.setShowHints(form.show_hints ?? false);
+    store.setGamification(form.gamification ?? false);
     store.setFields(initialFields);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.id]);
@@ -76,6 +77,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
           informed_consent: store.informedConsent || null,
           presentation_mode: store.presentationMode,
           show_hints: store.showHints,
+          gamification: store.gamification,
         }),
       });
       await fetch(`/api/forms/${form.id}/fields`, {
@@ -324,6 +326,14 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
                 value={store.showHints}
                 onChange={() => store.setShowHints(!store.showHints)}
               />
+              {/* Toggle: Gamification */}
+              <ToggleRow
+                label="🎮 Activar Gamificación"
+                description="Muestra vidas, puntos y rachas"
+                value={store.gamification}
+                onChange={() => store.setGamification(!store.gamification)}
+              />
+
 
               {/* Informed Consent */}
               <div className="field-group">

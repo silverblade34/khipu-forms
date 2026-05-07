@@ -18,6 +18,7 @@ interface BuilderState {
   informedConsent: string;
   presentationMode: 'classic' | 'cards' | 'duolingo';
   showHints: boolean;
+  gamification: boolean;
   fields: FormField[];
   isDirty: boolean;
   isSaving: boolean;
@@ -36,6 +37,7 @@ interface BuilderState {
   setInformedConsent: (v: string) => void;
   setPresentationMode: (v: 'classic' | 'cards' | 'duolingo') => void;
   setShowHints: (v: boolean) => void;
+  setGamification: (v: boolean) => void;
   setFields: (fields: FormField[]) => void;
   addField: (type: FormField['type']) => void;
   removeField: (id: string) => void;
@@ -61,6 +63,7 @@ const initialState = {
   informedConsent: '',
   presentationMode: 'classic' as const,
   showHints: false,
+  gamification: false,
   fields: [],
   isDirty: false,
   isSaving: false,
@@ -82,6 +85,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setInformedConsent: (informedConsent) => set({ informedConsent, isDirty: true }),
   setPresentationMode: (presentationMode) => set({ presentationMode, isDirty: true }),
   setShowHints: (showHints) => set({ showHints, isDirty: true }),
+  setGamification: (gamification) => set({ gamification, isDirty: true }),
   setFields: (fields) => set({ fields, isDirty: false }),
 
   addField: (type) => {

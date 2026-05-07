@@ -28,6 +28,7 @@ export interface Form {
   // v2.2 Presentation modes
   presentation_mode: 'classic' | 'cards' | 'duolingo';
   show_hints: boolean;
+  gamification: boolean;
   created_at: string;
   updated_at: string;
   field_count?: number;

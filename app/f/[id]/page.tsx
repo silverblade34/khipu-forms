@@ -20,7 +20,8 @@ const TopBar = ({
   currentIndex, 
   answered, 
   progress, 
-  timeLeft 
+  timeLeft,
+  showGamification
 }: { 
   formTitle: string;
   currentMode: string;
@@ -32,12 +33,13 @@ const TopBar = ({
   answered: number;
   progress: number;
   timeLeft: number | null;
+  showGamification: boolean;
 }) => (
   <>
     <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.8)', backdropFilter: 'blur(15px)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
       <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '22px', width: 'auto', flexShrink: 0 }} />
       <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formTitle}</span>
-      {currentMode === 'duolingo' && (
+      {currentMode === 'duolingo' && showGamification && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
           <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>🔥 {streak}</span>
           <span style={{ fontSize: '12px', fontWeight: '700', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '4px' }}>⭐ {points}</span>
@@ -149,12 +151,19 @@ export default function PublicFormPage() {
     if (!data) return;
     const currentField = data.fields[currentIndex];
     const val = answers[currentField.id] || '';
-    if (currentField.required && !val.trim()) {
+    
+    // Only enforce required if we haven't given feedback yet
+    if (!feedback && currentField.required && !val.trim()) {
       setValidationErrors({ ...validationErrors, [currentField.id]: 'Este campo es obligatorio' });
       return;
     }
+    
+    setFeedback(null);
     setSlideDir(dir);
-    if (currentIndex < total - 1) setCurrentIndex(currentIndex + 1);
+    if (currentIndex < total - 1) {
+      setCurrentIndex(currentIndex + 1);
+      setShowHint(null);
+    }
   };
 
   const goPrev = () => {
@@ -182,11 +191,15 @@ export default function PublicFormPage() {
 
     setFeedback({ correct: isCorrect, explanation: field.explanation });
     if (isCorrect) {
-      setPoints(p => p + 10);
-      setStreak(s => s + 1);
+      if (data.form.gamification) {
+        setPoints(p => p + 10);
+        setStreak(s => s + 1);
+      }
     } else {
-      setStreak(0);
-      setLives(l => Math.max(0, l - 1));
+      if (data.form.gamification) {
+        setStreak(0);
+        setLives(l => Math.max(0, l - 1));
+      }
     }
   };
 
@@ -457,6 +470,7 @@ export default function PublicFormPage() {
         answered={answered}
         progress={progress}
         timeLeft={timeLeft}
+        showGamification={data.form.gamification}
       />
       <div style={{ maxWidth: '640px', width: '100%', margin: '0 auto', padding: '40px 20px 80px', position: 'relative', zIndex: 1 }}>
         <div style={{ marginBottom: '32px', padding: '0 4px' }} className="animate-fade-in">
@@ -503,6 +517,7 @@ export default function PublicFormPage() {
         answered={answered}
         progress={progress}
         timeLeft={timeLeft}
+        showGamification={data.form.gamification}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', position: 'relative', zIndex: 1 }}>
         {/* Step counter */}
@@ -581,6 +596,7 @@ export default function PublicFormPage() {
         answered={answered}
         progress={progress}
         timeLeft={timeLeft}
+        showGamification={data.form.gamification}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', position: 'relative', zIndex: 1 }}>
@@ -659,20 +675,33 @@ export default function PublicFormPage() {
                   </div>
                 )}
 
-                {/* Manual check for text fields */}
-                {!feedback && field && (field.type === 'text' || field.type === 'textarea') && field.correct_answer && (
-                  <button type="button" onClick={() => checkAnswer(field.id, answers[field.id] || '')} className="btn btn-secondary" style={{ marginTop: '12px', height: '40px', fontSize: '13px', borderRadius: '10px' }}>
-                    Verificar respuesta
+                {/* Manual check for multi-step fields or any field that didn't auto-check */}
+                {!feedback && field && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      const val = answers[field.id] || '';
+                      if (field.required && !val.trim()) {
+                        setValidationErrors({ ...validationErrors, [field.id]: 'Este campo es obligatorio' });
+                        return;
+                      }
+                      checkAnswer(field.id, val);
+                    }} 
+                    className="btn btn-secondary" 
+                    style={{ marginTop: '12px', height: '44px', width: '100%', fontSize: '14px', borderRadius: '12px', fontWeight: '600' }}
+                  >
+                    {field.correct_answer ? 'Comprobar respuesta' : 'Confirmar selección'}
                   </button>
                 )}
               </div>
             </div>
 
+
             {/* Action button */}
             <div style={{ width: '100%', maxWidth: '560px' }}>
               {feedback || !field?.correct_answer ? (
                 currentIndex < total - 1 ? (
-                  <button type="button" onClick={() => { setFeedback(null); goNext('right'); }} className="btn btn-primary" style={{ width: '100%', height: '52px', borderRadius: '16px', fontWeight: '700', fontSize: '16px', background: feedback?.correct ? 'linear-gradient(135deg,#22c55e,#16a34a)' : undefined }}>
+                  <button type="button" onClick={() => goNext('right')} className="btn btn-primary" style={{ width: '100%', height: '52px', borderRadius: '16px', fontWeight: '700', fontSize: '16px', background: feedback?.correct ? 'linear-gradient(135deg,#22c55e,#16a34a)' : undefined }}>
                     Continuar →
                   </button>
                 ) : (
