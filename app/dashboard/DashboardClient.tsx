@@ -124,7 +124,7 @@ export default function DashboardClient({ user, forms: initialForms, isGuest }: 
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
+    window.location.href = '/login';
   }
 
   function handleCopyLink(formId: string) {

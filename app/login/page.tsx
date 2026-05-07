@@ -31,12 +31,7 @@ export default async function LoginPage({
       }} className="login-left-panel">
         <div style={{ maxWidth: '360px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '48px' }}>
-            <div style={{
-              width: '36px', height: '36px', borderRadius: '10px',
-              background: 'var(--accent)', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '16px'
-            }}>K</div>
-            <span style={{ fontWeight: '600', fontSize: '15px', color: 'var(--text-primary)' }}>Khipu Forms</span>
+            <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '36px', width: 'auto' }} />
           </div>
 
           <h2 style={{ fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: '1.2', marginBottom: '16px' }}>
@@ -82,12 +77,7 @@ export default async function LoginPage({
 
         {/* Mobile logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }} className="login-mobile-logo">
-          <div style={{
-            width: '36px', height: '36px', borderRadius: '10px',
-            background: 'var(--accent)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '16px'
-          }}>K</div>
-          <span style={{ fontWeight: '600', fontSize: '15px', color: 'var(--text-primary)' }}>Khipu Forms</span>
+          <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '32px', width: 'auto' }} />
         </div>
 
         <div style={{ marginBottom: '28px' }}>

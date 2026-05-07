@@ -16,6 +16,12 @@ export interface Form {
   description: string | null;
   is_public: boolean;
   access_code: string | null;
+  // Quiz mode
+  is_quiz: boolean;
+  show_score: boolean;
+  quiz_message: string | null;
+  // Anti-duplicate
+  require_email: boolean;
   created_at: string;
   updated_at: string;
   field_count?: number;
@@ -25,10 +31,11 @@ export interface Form {
 export interface FormField {
   id: string;
   form_id: string;
-  type: 'text' | 'textarea' | 'number' | 'email' | 'select' | 'checkbox';
+  type: 'text' | 'textarea' | 'number' | 'email' | 'select' | 'checkbox' | 'radio';
   label: string;
   required: boolean;
   options: string[];
+  correct_answer: string | null;
   order_index: number;
   created_at: string;
 }
@@ -36,6 +43,9 @@ export interface FormField {
 export interface Response {
   id: string;
   form_id: string;
+  respondent_email: string | null;
+  score: number | null;
+  max_score: number | null;
   created_at: string;
 }
 
@@ -44,6 +54,7 @@ export interface ResponseAnswer {
   response_id: string;
   field_id: string;
   value: string | null;
+  is_correct: boolean | null;
   created_at: string;
 }
 

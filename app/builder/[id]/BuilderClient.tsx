@@ -15,7 +15,8 @@ const FIELD_TYPES: { type: FormField['type']; label: string; iconPath: string }[
   { type: 'textarea', label: 'Texto largo',  iconPath: 'M4 6h16M4 10h16M4 14h16M4 18h10' },
   { type: 'email',    label: 'Email',        iconPath: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 6l-10 7L2 6' },
   { type: 'number',   label: 'Número',       iconPath: 'M7 20l4-16m2 16l4-16M6 9h14M4 15h14' },
-  { type: 'select',   label: 'Selección',    iconPath: 'M19 9l-7 7-7-7' },
+  { type: 'radio',    label: 'Opción única', iconPath: 'M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01' },
+  { type: 'select',   label: 'Desplegable',  iconPath: 'M19 9l-7 7-7-7' },
   { type: 'checkbox', label: 'Checkbox',     iconPath: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11' },
 ];
 
@@ -40,6 +41,10 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
     store.setDescription(form.description || '');
     store.setIsPublic(form.is_public);
     store.setAccessCode(form.access_code || '');
+    store.setIsQuiz(form.is_quiz ?? false);
+    store.setShowScore(form.show_score ?? true);
+    store.setQuizMessage(form.quiz_message || '¡Gracias por participar!');
+    store.setRequireEmail(form.require_email ?? false);
     store.setFields(initialFields);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.id]);
@@ -56,6 +61,10 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
           description: store.description || null,
           is_public: store.isPublic,
           access_code: store.accessCode || null,
+          is_quiz: store.isQuiz,
+          show_score: store.showScore,
+          quiz_message: store.quizMessage || null,
+          require_email: store.requireEmail,
         }),
       });
       await fetch(`/api/forms/${form.id}/fields`, {
@@ -250,50 +259,45 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
 
             {/* Settings */}
             <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>
-              Ajustes
+              Ajustes del formulario
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div className="field-group">
                 <label className="label">Descripción</label>
-                <textarea
-                  className="textarea"
-                  style={{ minHeight: '64px', fontSize: '12px' }}
-                  value={store.description}
-                  onChange={(e) => store.setDescription(e.target.value)}
-                  placeholder="Descripción opcional..."
-                />
+                <textarea className="textarea" style={{ minHeight: '64px', fontSize: '12px' }} value={store.description} onChange={(e) => store.setDescription(e.target.value)} placeholder="Descripción opcional..." />
               </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                <div
-                  onClick={() => store.setIsPublic(!store.isPublic)}
-                  style={{
-                    position: 'relative', width: '36px', height: '20px',
-                    borderRadius: '10px', transition: 'background 0.2s',
-                    background: store.isPublic ? 'var(--accent)' : 'var(--bg-elevated)',
-                    border: '1px solid var(--border)', cursor: 'pointer', flexShrink: 0,
-                  }}
-                >
-                  <div style={{
-                    position: 'absolute', top: '2px', left: '2px',
-                    width: '14px', height: '14px', borderRadius: '50%', background: 'white',
-                    transition: 'transform 0.2s',
-                    transform: store.isPublic ? 'translateX(16px)' : 'translateX(0)',
-                  }} />
-                </div>
-                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Público</span>
-              </label>
+              {/* Toggle: Público */}
+              <ToggleRow label="Formulario público" value={store.isPublic} onChange={() => store.setIsPublic(!store.isPublic)} />
 
               {!store.isPublic && (
                 <div className="field-group">
                   <label className="label">Código de acceso</label>
-                  <input
-                    className="input"
-                    style={{ fontSize: '12px' }}
-                    value={store.accessCode}
-                    onChange={(e) => store.setAccessCode(e.target.value)}
-                    placeholder="ej: khipu2025"
-                  />
+                  <input className="input" style={{ fontSize: '12px' }} value={store.accessCode} onChange={(e) => store.setAccessCode(e.target.value)} placeholder="ej: khipu2025" />
+                </div>
+              )}
+
+              {/* Toggle: Requerir email */}
+              <ToggleRow
+                label="Requerir email"
+                description="Evita respuestas duplicadas"
+                value={store.requireEmail ?? false}
+                onChange={() => store.setRequireEmail(!(store.requireEmail ?? false))}
+              />
+
+              {/* Toggle: Modo quiz */}
+              <ToggleRow
+                label="Modo Quiz"
+                description="Califica respuestas automáticamente"
+                value={store.isQuiz ?? false}
+                onChange={() => store.setIsQuiz(!(store.isQuiz ?? false))}
+                accent
+              />
+
+              {store.isQuiz && (
+                <div className="field-group">
+                  <label className="label">Mensaje al finalizar</label>
+                  <input className="input" style={{ fontSize: '12px' }} value={store.quizMessage ?? ''} onChange={(e) => store.setQuizMessage(e.target.value)} placeholder="¡Gracias por participar!" />
                 </div>
               )}
             </div>
@@ -482,28 +486,42 @@ function FieldCard({
             />
           </div>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={field.required}
-              onChange={(e) => onUpdate({ required: e.target.checked })}
-              style={{ width: '14px', height: '14px', accentColor: 'var(--accent)' }}
-            />
+            <input type="checkbox" checked={field.required} onChange={(e) => onUpdate({ required: e.target.checked })} style={{ width: '14px', height: '14px', accentColor: 'var(--accent)' }} />
             <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Campo obligatorio</span>
           </label>
-          {field.type === 'select' && (
+
+          {(field.type === 'select' || field.type === 'radio') && (
             <div className="field-group">
               <label className="label">Opciones (una por línea)</label>
-              <textarea
-                className="textarea"
-                value={field.options.join('\n')}
-                onChange={(e) => onUpdate({ options: e.target.value.split('\n').filter(Boolean) })}
-                placeholder={'Opción 1\nOpción 2\nOpción 3'}
-                style={{ minHeight: '80px' }}
-              />
+              <textarea className="textarea" value={field.options.join('\n')} onChange={(e) => onUpdate({ options: e.target.value.split('\n').filter(Boolean) })} placeholder={'Opción 1\nOpción 2\nOpción 3'} style={{ minHeight: '80px' }} />
+            </div>
+          )}
+
+          {(field.type === 'select' || field.type === 'radio') && field.options.length > 0 && (
+            <div className="field-group">
+              <label className="label">✓ Respuesta correcta (quiz)</label>
+              <select className="input" style={{ fontSize: '12px' }} value={field.correct_answer ?? ''} onChange={(e) => onUpdate({ correct_answer: e.target.value || null })}>
+                <option value="">Sin respuesta correcta</option>
+                {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
             </div>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+function ToggleRow({ label, description, value, onChange, accent }: { label: string; description?: string; value: boolean; onChange: () => void; accent?: boolean }) {
+  return (
+    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }}>
+      <div onClick={onChange} style={{ position: 'relative', width: '36px', height: '20px', borderRadius: '10px', transition: 'background 0.2s', background: value ? (accent ? 'var(--accent)' : 'var(--accent)') : 'var(--bg-elevated)', border: '1px solid var(--border)', cursor: 'pointer', flexShrink: 0, marginTop: '1px' }}>
+        <div style={{ position: 'absolute', top: '2px', left: '2px', width: '14px', height: '14px', borderRadius: '50%', background: 'white', transition: 'transform 0.2s', transform: value ? 'translateX(16px)' : 'translateX(0)' }} />
+      </div>
+      <div>
+        <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', lineHeight: '1.4' }}>{label}</span>
+        {description && <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{description}</span>}
+      </div>
+    </label>
   );
 }

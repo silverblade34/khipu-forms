@@ -12,27 +12,23 @@ export async function findOrCreateUserByGoogle(data: {
   name?: string;
   avatar_url?: string;
 }): Promise<User> {
-  // Try to find by google_id
   let user = await queryOne<User>(
     'SELECT * FROM users WHERE google_id = $1',
     [data.google_id]
   );
 
   if (!user) {
-    // Try to find by email
     user = await queryOne<User>(
       'SELECT * FROM users WHERE email = $1',
       [data.email]
     );
 
     if (user) {
-      // Update google_id
       user = await queryOne<User>(
         'UPDATE users SET google_id = $1, avatar_url = $2, updated_at = NOW() WHERE id = $3 RETURNING *',
         [data.google_id, data.avatar_url ?? null, user.id]
       );
     } else {
-      // Create new user
       user = await queryOne<User>(
         `INSERT INTO users (id, google_id, email, name, avatar_url)
          VALUES ($1, $2, $3, $4, $5) RETURNING *`,
@@ -103,6 +99,10 @@ export async function updateForm(formId: string, userId: string, data: {
   description?: string;
   is_public?: boolean;
   access_code?: string | null;
+  is_quiz?: boolean;
+  show_score?: boolean;
+  quiz_message?: string;
+  require_email?: boolean;
 }): Promise<Form | null> {
   const form = await queryOne<Form>('SELECT * FROM forms WHERE id = $1 AND user_id = $2', [formId, userId]);
   if (!form) return null;
@@ -113,21 +113,29 @@ export async function updateForm(formId: string, userId: string, data: {
       description = COALESCE($2, description),
       is_public = COALESCE($3, is_public),
       access_code = $4,
+      is_quiz = COALESCE($5, is_quiz),
+      show_score = COALESCE($6, show_score),
+      quiz_message = COALESCE($7, quiz_message),
+      require_email = COALESCE($8, require_email),
       updated_at = NOW()
-     WHERE id = $5 AND user_id = $6 RETURNING *`,
+     WHERE id = $9 AND user_id = $10 RETURNING *`,
     [
       data.title ?? null,
-      data.description ?? null,
+      data.description !== undefined ? data.description : null,
       data.is_public ?? null,
       data.access_code !== undefined ? data.access_code : form.access_code,
+      data.is_quiz ?? null,
+      data.show_score ?? null,
+      data.quiz_message ?? null,
+      data.require_email ?? null,
       formId,
-      userId
+      userId,
     ]
   );
 }
 
 export async function deleteForm(formId: string, userId: string): Promise<boolean> {
-  const result = await query(
+  await query(
     'DELETE FROM forms WHERE id = $1 AND user_id = $2',
     [formId, userId]
   );
@@ -151,20 +159,18 @@ export async function saveFields(formId: string, userId: string, fields: Array<{
   label: string;
   required: boolean;
   options: string[];
+  correct_answer?: string | null;
   order_index: number;
 }>): Promise<FormField[]> {
-  // Verify ownership
   const form = await queryOne<Form>('SELECT id FROM forms WHERE id = $1 AND user_id = $2', [formId, userId]);
   if (!form) throw new Error('Form not found or unauthorized');
 
-  // Delete all existing fields
   await query('DELETE FROM form_fields WHERE form_id = $1', [formId]);
 
-  // Insert new fields
   for (const field of fields) {
     await query(
-      `INSERT INTO form_fields (id, form_id, type, label, required, options, order_index)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      `INSERT INTO form_fields (id, form_id, type, label, required, options, correct_answer, order_index)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
         field.id || uuidv4(),
         formId,
@@ -172,6 +178,7 @@ export async function saveFields(formId: string, userId: string, fields: Array<{
         field.label,
         field.required,
         JSON.stringify(field.options || []),
+        field.correct_answer ?? null,
         field.order_index,
       ]
     );
@@ -184,34 +191,86 @@ export async function saveFields(formId: string, userId: string, fields: Array<{
 // RESPONSE ACTIONS
 // ============================================
 
-export async function submitResponse(formId: string, answers: Array<{
-  field_id: string;
-  value: string;
-}>): Promise<string> {
+export async function submitResponse(
+  formId: string,
+  answers: Array<{ field_id: string; value: string }>,
+  respondentEmail?: string
+): Promise<{ responseId: string; score?: number; maxScore?: number; results?: Record<string, boolean> }> {
   const responseId = uuidv4();
 
+  // Check for duplicate email submission
+  if (respondentEmail) {
+    const existing = await queryOne<{ id: string }>(
+      'SELECT id FROM responses WHERE form_id = $1 AND respondent_email = $2',
+      [formId, respondentEmail]
+    );
+    if (existing) {
+      throw new Error('DUPLICATE_EMAIL');
+    }
+  }
+
+  // Get form fields to compute quiz score
+  const fields = await query<FormField>(
+    'SELECT * FROM form_fields WHERE form_id = $1',
+    [formId]
+  );
+
+  // Compute score for quiz mode
+  const gradedFields = fields.filter((f) => f.correct_answer !== null && f.correct_answer !== '');
+  let score = 0;
+  let maxScore = gradedFields.length;
+  const results: Record<string, boolean> = {};
+
+  for (const answer of answers) {
+    const field = fields.find((f) => f.id === answer.field_id);
+    if (field && field.correct_answer !== null && field.correct_answer !== '') {
+      const isCorrect = answer.value.trim().toLowerCase() === field.correct_answer.trim().toLowerCase();
+      results[answer.field_id] = isCorrect;
+      if (isCorrect) score++;
+    }
+  }
+
   await query(
-    'INSERT INTO responses (id, form_id) VALUES ($1, $2)',
-    [responseId, formId]
+    `INSERT INTO responses (id, form_id, respondent_email, score, max_score)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [
+      responseId,
+      formId,
+      respondentEmail ?? null,
+      maxScore > 0 ? score : null,
+      maxScore > 0 ? maxScore : null,
+    ]
   );
 
   for (const answer of answers) {
+    const isCorrect = results[answer.field_id] ?? null;
     await query(
-      `INSERT INTO response_answers (id, response_id, field_id, value)
-       VALUES ($1, $2, $3, $4)`,
-      [uuidv4(), responseId, answer.field_id, answer.value || '']
+      `INSERT INTO response_answers (id, response_id, field_id, value, is_correct)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [uuidv4(), responseId, answer.field_id, answer.value || '', isCorrect]
     );
   }
 
-  return responseId;
+  return {
+    responseId,
+    score: maxScore > 0 ? score : undefined,
+    maxScore: maxScore > 0 ? maxScore : undefined,
+    results: maxScore > 0 ? results : undefined,
+  };
 }
 
 export async function getResponses(formId: string, userId: string): Promise<ResponseWithAnswers[]> {
-  // Verify ownership
   const form = await queryOne<Form>('SELECT id FROM forms WHERE id = $1 AND user_id = $2', [formId, userId]);
   if (!form) throw new Error('Form not found or unauthorized');
 
-  const responses = await query<{ id: string; form_id: string; created_at: string }>(
+  const responses = await query<{
+    id: string;
+    form_id: string;
+    respondent_email: string | null;
+    score: number | null;
+    max_score: number | null;
+    created_at: string;
+  }>(
     'SELECT * FROM responses WHERE form_id = $1 ORDER BY created_at DESC',
     [formId]
   );
@@ -224,6 +283,7 @@ export async function getResponses(formId: string, userId: string): Promise<Resp
       response_id: string;
       field_id: string;
       value: string;
+      is_correct: boolean | null;
       created_at: string;
       field_label: string;
       field_type: string;
@@ -235,10 +295,7 @@ export async function getResponses(formId: string, userId: string): Promise<Resp
       [response.id]
     );
 
-    result.push({
-      ...response,
-      answers,
-    });
+    result.push({ ...response, answers });
   }
 
   return result;

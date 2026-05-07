@@ -73,7 +73,6 @@ export default function LoginForm({ initialError }: Props) {
       });
     };
 
-    // Load script
     if (window.google) {
       loadGSI();
     } else {
@@ -102,12 +101,12 @@ export default function LoginForm({ initialError }: Props) {
         router.push('/dashboard');
         router.refresh();
       } else {
+        setLoading(false);
         setError(data.error || 'Error al iniciar sesión. Intenta de nuevo.');
       }
     } catch {
-      setError('Error de conexión. Intenta de nuevo.');
-    } finally {
       setLoading(false);
+      setError('Error de conexión. Intenta de nuevo.');
     }
   }
 
@@ -131,119 +130,153 @@ export default function LoginForm({ initialError }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Error */}
-      {error && (
+    <>
+      {/* Full-screen verification overlay modal */}
+      {loading && (
         <div style={{
-          background: 'rgba(239,68,68,0.08)',
-          border: '1px solid rgba(239,68,68,0.2)',
-          borderRadius: '8px',
-          padding: '10px 14px',
-          fontSize: '13px',
-          color: 'var(--error)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(10,10,11,0.92)',
+          backdropFilter: 'blur(12px)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: '20px',
+          animation: 'fadeInOverlay 0.2s ease',
         }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="15" y1="9" x2="9" y2="15"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
-          </svg>
-          {error}
+          {/* Logo */}
+          <div style={{
+            width: '48px', height: '48px', borderRadius: '14px',
+            background: 'var(--accent)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            color: 'white', fontWeight: '700', fontSize: '22px',
+            marginBottom: '4px',
+          }}>K</div>
+
+          {/* Spinner */}
+          <div style={{
+            width: '40px', height: '40px',
+            border: '3px solid rgba(124,106,247,0.2)',
+            borderTopColor: 'var(--accent)',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '6px' }}>
+              Verificando tu cuenta
+            </p>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+              Iniciando sesión con Google...
+            </p>
+          </div>
+
+          <style>{`
+            @keyframes fadeInOverlay {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+          `}</style>
         </div>
       )}
 
-      {/* Google GSI button (rendered by Google's SDK) */}
-      {loading ? (
-        <div style={{
-          height: '44px', borderRadius: '8px', border: '1px solid var(--border)',
-          background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13px',
-        }}>
-          <span style={{
-            width: '16px', height: '16px', border: '2px solid var(--border)',
-            borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite',
-            display: 'inline-block',
-          }} />
-          Verificando...
-        </div>
-      ) : (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Error */}
+        {error && (
+          <div style={{
+            background: 'rgba(239,68,68,0.08)',
+            border: '1px solid rgba(239,68,68,0.2)',
+            borderRadius: '8px',
+            padding: '10px 14px',
+            fontSize: '13px',
+            color: 'var(--error)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            {error}
+          </div>
+        )}
+
+        {/* Google GSI button */}
         <div
           ref={googleBtnRef}
           style={{ width: '100%', minHeight: '44px' }}
         />
-      )}
 
-      {/* Divider */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-        <span style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-          o continúa sin cuenta
-        </span>
-        <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-      </div>
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+            o continúa sin cuenta
+          </span>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+        </div>
 
-      {/* Guest button */}
-      <button
-        onClick={handleGuestLogin}
-        disabled={guestLoading || loading}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-          width: '100%', height: '44px', borderRadius: '8px',
-          border: '1px solid var(--border)', background: 'transparent',
-          color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500',
-          fontFamily: 'Inter, sans-serif', cursor: guestLoading ? 'not-allowed' : 'pointer',
-          transition: 'all 0.2s ease', opacity: guestLoading ? 0.6 : 1,
-        }}
-        onMouseEnter={(e) => {
-          if (!guestLoading) {
+        {/* Guest button */}
+        <button
+          onClick={handleGuestLogin}
+          disabled={guestLoading || loading}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            width: '100%', height: '44px', borderRadius: '8px',
+            border: '1px solid var(--border)', background: 'transparent',
+            color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500',
+            fontFamily: 'Inter, sans-serif', cursor: guestLoading ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s ease', opacity: guestLoading || loading ? 0.6 : 1,
+          }}
+          onMouseEnter={(e) => {
+            if (!guestLoading && !loading) {
+              const el = e.currentTarget;
+              el.style.color = 'var(--text-primary)';
+              el.style.borderColor = 'var(--border-light)';
+              el.style.background = 'var(--bg-elevated)';
+            }
+          }}
+          onMouseLeave={(e) => {
             const el = e.currentTarget;
-            el.style.color = 'var(--text-primary)';
-            el.style.borderColor = 'var(--border-light)';
-            el.style.background = 'var(--bg-elevated)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          const el = e.currentTarget;
-          el.style.color = 'var(--text-secondary)';
-          el.style.borderColor = 'var(--border)';
-          el.style.background = 'transparent';
-        }}
-      >
-        {guestLoading ? (
-          <>
-            <span style={{
-              width: '16px', height: '16px', border: '2px solid var(--border)',
-              borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite',
-              display: 'inline-block',
-            }} />
-            Creando sesión...
-          </>
-        ) : (
-          <>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            Entrar como invitado
-          </>
-        )}
-      </button>
+            el.style.color = 'var(--text-secondary)';
+            el.style.borderColor = 'var(--border)';
+            el.style.background = 'transparent';
+          }}
+        >
+          {guestLoading ? (
+            <>
+              <span style={{
+                width: '16px', height: '16px', border: '2px solid var(--border)',
+                borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+                display: 'inline-block',
+              }} />
+              Creando sesión...
+            </>
+          ) : (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Entrar como invitado
+            </>
+          )}
+        </button>
 
-      {/* Info box */}
-      <div style={{
-        background: 'rgba(124,106,247,0.06)', border: '1px solid rgba(124,106,247,0.15)',
-        borderRadius: '8px', padding: '10px 14px', fontSize: '12px',
-        color: 'var(--text-secondary)', lineHeight: '1.6',
-      }}>
-        <strong style={{ color: 'var(--accent)' }}>Modo invitado:</strong>{' '}
-        tus formularios se guardan en el servidor. Puedes conectar Google después para acceder desde cualquier dispositivo.
+        {/* Info box */}
+        <div style={{
+          background: 'rgba(124,106,247,0.06)', border: '1px solid rgba(124,106,247,0.15)',
+          borderRadius: '8px', padding: '10px 14px', fontSize: '12px',
+          color: 'var(--text-secondary)', lineHeight: '1.6',
+        }}>
+          <strong style={{ color: 'var(--accent)' }}>Modo invitado:</strong>{' '}
+          tus formularios se guardan en el servidor. Puedes conectar Google después para acceder desde cualquier dispositivo.
+        </div>
+
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.6' }}>
+          Al continuar, aceptas nuestros términos de uso y política de privacidad
+        </p>
       </div>
-
-      <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.6' }}>
-        Al continuar, aceptas nuestros términos de uso y política de privacidad
-      </p>
-    </div>
+    </>
   );
 }

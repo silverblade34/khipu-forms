@@ -10,6 +10,10 @@ interface BuilderState {
   description: string;
   isPublic: boolean;
   accessCode: string;
+  isQuiz: boolean;
+  showScore: boolean;
+  quizMessage: string;
+  requireEmail: boolean;
   fields: FormField[];
   isDirty: boolean;
   isSaving: boolean;
@@ -20,6 +24,10 @@ interface BuilderState {
   setDescription: (desc: string) => void;
   setIsPublic: (isPublic: boolean) => void;
   setAccessCode: (code: string) => void;
+  setIsQuiz: (v: boolean) => void;
+  setShowScore: (v: boolean) => void;
+  setQuizMessage: (v: string) => void;
+  setRequireEmail: (v: boolean) => void;
   setFields: (fields: FormField[]) => void;
   addField: (type: FormField['type']) => void;
   removeField: (id: string) => void;
@@ -37,6 +45,10 @@ const initialState = {
   description: '',
   isPublic: true,
   accessCode: '',
+  isQuiz: false,
+  showScore: true,
+  quizMessage: '¡Gracias por participar!',
+  requireEmail: false,
   fields: [],
   isDirty: false,
   isSaving: false,
@@ -46,15 +58,14 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   ...initialState,
 
   setFormId: (id) => set({ formId: id }),
-
   setTitle: (title) => set({ title, isDirty: true }),
-
   setDescription: (description) => set({ description, isDirty: true }),
-
   setIsPublic: (isPublic) => set({ isPublic, isDirty: true }),
-
   setAccessCode: (accessCode) => set({ accessCode, isDirty: true }),
-
+  setIsQuiz: (isQuiz) => set({ isQuiz, isDirty: true }),
+  setShowScore: (showScore) => set({ showScore, isDirty: true }),
+  setQuizMessage: (quizMessage) => set({ quizMessage, isDirty: true }),
+  setRequireEmail: (requireEmail) => set({ requireEmail, isDirty: true }),
   setFields: (fields) => set({ fields, isDirty: false }),
 
   addField: (type) => {
@@ -65,7 +76,8 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       type,
       label: getDefaultLabel(type),
       required: false,
-      options: type === 'select' ? ['Opción 1', 'Opción 2'] : [],
+      options: (type === 'select' || type === 'radio') ? ['Opción 1', 'Opción 2'] : [],
+      correct_answer: null,
       order_index: fields.length,
       created_at: new Date().toISOString(),
     };
@@ -74,9 +86,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
 
   removeField: (id) => {
     const { fields } = get();
-    const updated = fields
-      .filter((f) => f.id !== id)
-      .map((f, i) => ({ ...f, order_index: i }));
+    const updated = fields.filter((f) => f.id !== id).map((f, i) => ({ ...f, order_index: i }));
     set({ fields: updated, isDirty: true });
   },
 
@@ -105,9 +115,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   },
 
   setIsSaving: (isSaving) => set({ isSaving }),
-
   markClean: () => set({ isDirty: false }),
-
   reset: () => set(initialState),
 }));
 
@@ -118,6 +126,7 @@ function getDefaultLabel(type: FormField['type']): string {
     number: 'Número',
     email: 'Correo electrónico',
     select: 'Selección',
+    radio: 'Opción única',
     checkbox: 'Casilla de verificación',
   };
   return labels[type];
