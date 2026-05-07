@@ -43,10 +43,20 @@ const TopBar = ({
       <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formTitle}</span>
       {currentMode === 'duolingo' && showGamification && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-          <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>🔥 {streak}</span>
-          <span style={{ fontSize: '12px', fontWeight: '700', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '4px' }}>⭐ {points}</span>
-          <div style={{ display: 'flex', gap: '3px' }}>
-            {[...Array(maxLives)].map((_, i) => <span key={i} style={{ fontSize: '14px', opacity: i < lives ? 1 : 0.2 }}>❤️</span>)}
+          <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 12 7.5 12 11C12 11 14.5 10 16 10C17.5 10 19 12.5 19 15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15C5 12 7 9 9 7C9 7 9 11 11 11C11 11 12 2 12 2Z"/></svg>
+            {streak}
+          </span>
+          <span style={{ fontSize: '12px', fontWeight: '700', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            {points}
+          </span>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            {[...Array(maxLives)].map((_, i) => (
+              <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < lives ? "#ef4444" : "rgba(255,255,255,0.15)"} style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.41 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.59 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/>
+              </svg>
+            ))}
           </div>
         </div>
       )}
@@ -287,9 +297,15 @@ export default function PublicFormPage() {
           {quizResult ? (
             <div className="score-card">
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>{passed ? '🎉' : '📝'}</div>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>
+                  {passed ? (
+                    <img src="/llama-happy.png" alt="Llama Feliz" style={{ width: '80px', height: '80px', margin: '0 auto', display: 'block' }} className="animate-bounce" />
+                  ) : (
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{color: 'var(--text-muted)'}}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  )}
+                </div>
                 <h2 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-                  {passed ? '¡Buen trabajo!' : 'Cuestionario completado'}
+                  {passed ? '¡Excelente trabajo!' : 'Formulario completado'}
                 </h2>
               </div>
               {/* Score circle */}
@@ -334,7 +350,9 @@ export default function PublicFormPage() {
             </div>
           ) : (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--success-dim)', border: '2px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px' }}>✓</div>
+              <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--success-dim)', border: '2px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#22c55e' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
               <h2 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: '8px' }}>¡Respuesta enviada!</h2>
               <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '28px' }}>Tu respuesta ha sido registrada correctamente.</p>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -354,7 +372,9 @@ export default function PublicFormPage() {
     return (
       <div className="public-form-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '24px' }}>
         <div style={{ textAlign: 'center', maxWidth: '400px' }} className="animate-scale-in">
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>✅</div>
+          <div style={{ marginBottom: '24px', color: '#22c55e', display: 'flex', justifyContent: 'center' }}>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
+          </div>
           <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'white', marginBottom: '12px' }}>Ya has respondido</h2>
           <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6' }}>
             Este formulario solo permite una respuesta por persona y ya hemos registrado la tuya. ¡Gracias por participar!
@@ -373,7 +393,9 @@ export default function PublicFormPage() {
       <div style={{ width: '100%', maxWidth: '380px' }} className="animate-fade-in">
         <div className="public-form-card">
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '12px' }}>🔒</div>
+            <div style={{ marginBottom: '16px', color: 'var(--accent)' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
             <h1 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>{data.form.title}</h1>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Este formulario requiere un código de acceso</p>
           </div>
@@ -397,7 +419,9 @@ export default function PublicFormPage() {
       <div style={{ width: '100%', maxWidth: '400px' }} className="animate-fade-in">
         <div className="public-form-card">
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '12px' }}>✉️</div>
+            <div style={{ marginBottom: '16px', color: 'var(--accent)' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
             <h1 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>{data?.form.title}</h1>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
               Para responder este formulario, ingresa tu correo electrónico.<br />
@@ -422,7 +446,9 @@ export default function PublicFormPage() {
       <div style={{ width: '100%', maxWidth: '500px' }} className="animate-fade-in">
         <div className="public-form-card">
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '12px' }}>📜</div>
+            <div style={{ marginBottom: '16px', color: 'var(--accent)' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
             <h1 style={{ fontSize: '20px', fontWeight: '800', color: 'white', marginBottom: '10px' }}>Consentimiento Informado</h1>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Por favor, lee y acepta los términos antes de continuar.</p>
           </div>
@@ -548,7 +574,7 @@ export default function PublicFormPage() {
                     style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, color: showHint === field.id ? '#fbbf24' : 'rgba(255,255,255,0.4)', transition: 'all 0.2s' }}
                     title="Ver pista"
                   >
-                    💡
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
                   </button>
                 )}
               </div>
@@ -608,11 +634,14 @@ export default function PublicFormPage() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', position: 'relative', zIndex: 1 }}>
         {isGameOver ? (
           <div className="animate-scale-in" style={{ textAlign: 'center', maxWidth: '400px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>💔</div>
-            <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>¡Sin vidas!</h2>
-            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', marginBottom: '28px' }}>No te rindas, ¡puedes intentarlo de nuevo!</p>
-            <button onClick={() => { setLives(3); setPoints(0); setStreak(0); setCurrentIndex(0); setAnswers({}); setFeedback(null); }} className="btn btn-primary" style={{ height: '50px', padding: '0 32px', borderRadius: '14px', fontWeight: '700', fontSize: '15px' }}>
-              🔄 Intentar de nuevo
+            <div style={{ marginBottom: '24px' }}>
+              <img src="/llama-sad.png" alt="Llama Triste" style={{ width: '140px', height: '140px', margin: '0 auto' }} className="animate-pulse" />
+            </div>
+            <h2 style={{ fontSize: '26px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>¡Ups! Te quedaste sin vidas</h2>
+            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', marginBottom: '32px' }}>No te preocupes, ¡la práctica hace al maestro! Vuelve a intentarlo para mejorar tu puntuación.</p>
+            <button onClick={() => { setLives(data.form.initial_lives ?? 3); setPoints(0); setStreak(0); setCurrentIndex(0); setAnswers({}); setFeedback(null); }} className="btn btn-primary" style={{ height: '54px', padding: '0 40px', borderRadius: '16px', fontWeight: '700', fontSize: '16px', boxShadow: '0 10px 25px rgba(124,106,247,0.3)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Reintentar desafío
             </button>
           </div>
         ) : (
@@ -622,7 +651,7 @@ export default function PublicFormPage() {
               <div style={{ padding: '28px 28px 24px', borderRadius: '24px', border: `2px solid ${feedback ? (feedback.correct ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)') : 'rgba(255,255,255,0.08)'}`, background: feedback ? (feedback.correct ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)') : 'rgba(17,17,19,0.7)', transition: 'all 0.3s' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                   <span style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{currentIndex + 1} / {total}</span>
-                  {streak >= 2 && <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', background: 'rgba(245,158,11,0.15)', padding: '3px 10px', borderRadius: '99px' }}>🔥 Racha x{streak}</span>}
+                  {streak >= 2 && <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', background: 'rgba(245,158,11,0.15)', padding: '3px 10px', borderRadius: '99px', display: 'flex', alignItems: 'center', gap: '4px' }}><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 12 7.5 12 11C12 11 14.5 10 16 10C17.5 10 19 12.5 19 15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15C5 12 7 9 9 7C9 7 9 11 11 11C11 11 12 2 12 2Z"/></svg> Racha x{streak}</span>}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
                   <label style={{ display: 'block', fontSize: '20px', fontWeight: '700', color: 'white', lineHeight: '1.4' }}>
@@ -634,7 +663,7 @@ export default function PublicFormPage() {
                       onClick={() => setShowHint(showHint === field.id ? null : field.id)}
                       style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, color: showHint === field.id ? '#fbbf24' : 'rgba(255,255,255,0.4)', transition: 'all 0.2s' }}
                     >
-                      💡
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
                     </button>
                   )}
                 </div>
@@ -660,26 +689,43 @@ export default function PublicFormPage() {
                   />
                 )}
 
-                {/* Feedback panel */}
-                {feedback && (
-                  <div className="animate-fade-in">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '28px' }}>{feedback.correct ? '✅' : '❌'}</span>
-                      <div>
-                        <p style={{ fontWeight: '700', fontSize: '15px', color: feedback.correct ? '#22c55e' : '#ef4444', margin: 0 }}>{feedback.correct ? `¡Correcto! +10 puntos` : 'Respuesta incorrecta'}</p>
-                        {!feedback.correct && field?.correct_answer && (
-                          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', margin: 0 }}>La respuesta correcta es: <strong style={{ color: 'white' }}>{field.correct_answer}</strong></p>
-                        )}
-                      </div>
-                    </div>
-                    {feedback.explanation && (
-                      <div style={{ background: 'rgba(124,106,247,0.1)', border: '1px solid rgba(124,106,247,0.2)', borderRadius: '12px', padding: '12px 16px' }}>
-                        <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Fundamentación</p>
-                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: '1.6' }}>{feedback.explanation}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                 {/* Feedback panel */}
+                 {feedback && (
+                   <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                     <div style={{ position: 'relative', width: '120px', height: '120px' }}>
+                       <img 
+                         src={feedback.correct ? "/llama-happy.png" : "/llama-sad.png"} 
+                         alt="Feedback Mascot" 
+                         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                         className={feedback.correct ? "animate-bounce" : "animate-shake"}
+                       />
+                       <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: feedback.correct ? '#22c55e' : '#ef4444', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', border: '2px solid #111113' }}>
+                         {feedback.correct ? (
+                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                         ) : (
+                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                         )}
+                       </div>
+                     </div>
+                     <div style={{ textAlign: 'center' }}>
+                       <p style={{ fontWeight: '800', fontSize: '18px', color: feedback.correct ? '#22c55e' : '#ef4444', marginBottom: '4px' }}>
+                         {feedback.correct ? `¡Increíble! +10 puntos` : '¡Oh no! Casi lo logras'}
+                       </p>
+                       {!feedback.correct && field?.correct_answer && (
+                         <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', margin: 0 }}>La respuesta correcta es: <strong style={{ color: 'white' }}>{field.correct_answer}</strong></p>
+                       )}
+                     </div>
+                     {feedback.explanation && (
+                       <div style={{ background: 'rgba(124,106,247,0.1)', border: '1px solid rgba(124,106,247,0.2)', borderRadius: '16px', padding: '16px', width: '100%' }}>
+                         <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                           Fundamentación
+                         </p>
+                         <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: '1.6' }}>{feedback.explanation}</p>
+                       </div>
+                     )}
+                   </div>
+                 )}
 
                 {/* Manual check for multi-step fields or any field that didn't auto-check */}
                 {!feedback && field && (
