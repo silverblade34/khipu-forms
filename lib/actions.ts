@@ -96,7 +96,7 @@ export async function getFormById(formId: string): Promise<Form | null> {
 
 export async function updateForm(formId: string, userId: string, data: {
   title?: string;
-  description?: string;
+  description?: string | null;
   is_public?: boolean;
   access_code?: string | null;
   is_quiz?: boolean;
@@ -107,13 +107,13 @@ export async function updateForm(formId: string, userId: string, data: {
   informed_consent?: string | null;
   presentation_mode?: 'classic' | 'cards' | 'duolingo';
 }): Promise<Form | null> {
-  const form = await queryOne<Form>('SELECT * FROM forms WHERE id = $1 AND user_id = $2', [formId, userId]);
+  const form = await queryOne<Form>('SELECT id FROM forms WHERE id = $1 AND user_id = $2', [formId, userId]);
   if (!form) return null;
 
   return queryOne<Form>(
     `UPDATE forms SET
-      title = COALESCE($1, title),
-      description = COALESCE($2, description),
+      title = $1,
+      description = $2,
       is_public = COALESCE($3, is_public),
       access_code = $4,
       is_quiz = COALESCE($5, is_quiz),
@@ -126,16 +126,16 @@ export async function updateForm(formId: string, userId: string, data: {
       updated_at = NOW()
      WHERE id = $12 AND user_id = $13 RETURNING *`,
     [
-      data.title ?? null,
-      data.description !== undefined ? data.description : null,
+      data.title ?? 'Formulario sin título',
+      data.description ?? null,
       data.is_public ?? null,
-      data.access_code !== undefined ? data.access_code : form.access_code,
+      data.access_code ?? null,
       data.is_quiz ?? null,
       data.show_score ?? null,
       data.quiz_message ?? null,
       data.require_email ?? null,
       data.step_by_step ?? null,
-      data.informed_consent !== undefined ? data.informed_consent : form.informed_consent,
+      data.informed_consent ?? null,
       data.presentation_mode ?? null,
       formId,
       userId,

@@ -4,6 +4,7 @@ import { useEffect, useCallback, useState } from 'react';
 import { useBuilderStore } from '@/store/builderStore';
 import { Form, FormField } from '@/lib/types';
 import Link from 'next/link';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Props {
   form: Form;
@@ -34,6 +35,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
   const [copied, setCopied] = useState(false);
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     store.setFormId(form.id);
@@ -81,6 +83,9 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
       store.markClean();
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Error al guardar los cambios. Por favor, verifica tu conexión.');
     } finally {
       store.setIsSaving(false);
     }
@@ -168,18 +173,11 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
             Guardar
           </button>
 
-          <button onClick={copyLink} className="btn btn-primary btn-sm">
-            {copied ? (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            ) : (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
-              </svg>
-            )}
-            <span className="btn-share-text">{copied ? 'Copiado' : 'Compartir'}</span>
+          <button onClick={() => setShowShareModal(true)} className="btn btn-primary btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+            </svg>
+            <span className="btn-share-text">Compartir</span>
           </button>
 
           <Link
@@ -332,9 +330,9 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
                 <label className="label">🎨 Modo de presentación</label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {([
-                    { value: 'classic', emoji: '📋', title: 'Modo Clásico', desc: 'Vista tradicional de lista scrollable' },
-                    { value: 'cards',   emoji: '🃏', title: 'Modo Secuencial', desc: 'Una pregunta a la vez con enfoque total' },
-                    { value: 'duolingo',emoji: '🎮', title: 'Modo Interactivo Pro', desc: 'Gamificado con feedback, puntos y vidas' },
+                    { value: 'classic', icon: '📋', title: 'Modo Clásico', desc: 'Vista tradicional de lista' },
+                    { value: 'cards',   icon: '🃏', title: 'Modo Secuencial', desc: 'Una pregunta a la vez' },
+                    { value: 'duolingo',icon: '🎮', title: 'Modo Interactivo Pro', desc: 'Gamificado con feedback y vidas' },
                   ] as const).map((mode) => (
                     <div
                       key={mode.value}
@@ -347,7 +345,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
                         transition: 'all 0.15s',
                       }}
                     >
-                      <span style={{ fontSize: '18px', flexShrink: 0 }}>{mode.emoji}</span>
+                      <span style={{ fontSize: '18px', flexShrink: 0 }}>{mode.icon}</span>
                       <div style={{ flex: 1 }}>
                         <p style={{ fontSize: '12px', fontWeight: '600', color: store.presentationMode === mode.value ? 'var(--accent)' : 'var(--text-primary)', margin: 0 }}>{mode.title}</p>
                         <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>{mode.desc}</p>
@@ -466,6 +464,68 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
         }
         .btn-share-text { display: none; }
       `}</style>
+
+      {showShareModal && (
+        <ShareModal 
+          url={`${window.location.origin}/f/${form.id}`} 
+          onClose={() => setShowShareModal(false)} 
+        />
+      )}
+    </div>
+  );
+}
+
+function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  const shareWhatsApp = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent('Por favor, responde este formulario: ' + url)}`, '_blank');
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
+      <div style={{ position: 'relative', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '20px', width: '100%', maxWidth: '400px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', animation: 'scaleIn 0.3s ease' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700' }}>Compartir formulario</h3>
+          <button onClick={onClose} className="btn btn-ghost btn-sm" style={{ padding: '0 8px' }}>×</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+          <div style={{ background: 'white', padding: '12px', borderRadius: '16px' }}>
+            <QRCodeSVG value={url} size={160} />
+          </div>
+
+          <div style={{ width: '100%' }}>
+            <label className="label" style={{ marginBottom: '8px', display: 'block' }}>Enlace público</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input readOnly className="input" value={url} style={{ fontSize: '12px', background: 'var(--bg-elevated)' }} />
+              <button onClick={copy} className="btn btn-secondary btn-sm" style={{ whiteSpace: 'nowrap' }}>
+                {copied ? '¡Copiado!' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+
+          <button onClick={shareWhatsApp} className="btn btn-primary" style={{ width: '100%', background: '#25D366', border: 'none', color: 'white' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '8px' }}>
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.435 5.63 1.435h.008c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            </svg>
+            WhatsApp
+          </button>
+        </div>
+      </div>
+      <style>{`
+        @keyframes scaleIn {
+          from { transform: scale(0.9); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -551,14 +611,65 @@ function FieldCard({
 
           {(field.type === 'select' || field.type === 'radio') && (
             <div className="field-group">
-              <label className="label">Opciones (una por línea)</label>
-              <textarea className="textarea" value={field.options.join('\n')} onChange={(e) => onUpdate({ options: e.target.value.split('\n').filter(Boolean) })} placeholder={'Opción 1\nOpción 2\nOpción 3'} style={{ minHeight: '80px' }} />
+              <label className="label">Opciones de respuesta</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {field.options.map((opt, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '6px' }}>
+                    <input
+                      className="input"
+                      style={{ fontSize: '12px' }}
+                      value={opt}
+                      onChange={(e) => {
+                        const newOpts = [...field.options];
+                        newOpts[i] = e.target.value;
+                        onUpdate({ options: newOpts });
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const newOpts = [...field.options];
+                          newOpts.splice(i + 1, 0, '');
+                          onUpdate({ options: newOpts });
+                          // Focus the next one after render
+                          setTimeout(() => {
+                            const inputs = document.querySelectorAll('.option-input');
+                            (inputs[i + 1] as HTMLInputElement)?.focus();
+                          }, 10);
+                        }
+                        if (e.key === 'Backspace' && !opt && field.options.length > 1) {
+                          e.preventDefault();
+                          onUpdate({ options: field.options.filter((_, idx) => idx !== i) });
+                          setTimeout(() => {
+                            const inputs = document.querySelectorAll('.option-input');
+                            (inputs[Math.max(0, i - 1)] as HTMLInputElement)?.focus();
+                          }, 10);
+                        }
+                      }}
+                      className="input option-input"
+                    />
+                    <button 
+                      onClick={() => onUpdate({ options: field.options.filter((_, idx) => idx !== i) })}
+                      className="btn btn-ghost"
+                      style={{ padding: '0 8px', color: 'var(--error)' }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button 
+                  onClick={() => onUpdate({ options: [...field.options, `Opción ${field.options.length + 1}`] })}
+                  className="btn btn-ghost"
+                  style={{ fontSize: '11px', justifyContent: 'flex-start', padding: '4px 8px', color: 'var(--accent)' }}
+                >
+                  + Agregar opción
+                </button>
+              </div>
             </div>
           )}
 
           {(field.type === 'select' || field.type === 'radio') && field.options.length > 0 && (
             <div className="field-group">
-              <label className="label">✓ Respuesta correcta (quiz)</label>
+              <label className="label">Respuesta correcta (Cuestionario)</label>
               <select className="input" style={{ fontSize: '12px' }} value={field.correct_answer ?? ''} onChange={(e) => onUpdate({ correct_answer: e.target.value || null })}>
                 <option value="">Sin respuesta correcta</option>
                 {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
@@ -567,7 +678,7 @@ function FieldCard({
           )}
 
           <div className="field-group">
-            <label className="label">💡 Pista (antes de responder)</label>
+            <label className="label">Pista (ayuda antes de responder)</label>
             <textarea
               className="textarea"
               style={{ minHeight: '50px', fontSize: '12px' }}
@@ -577,20 +688,22 @@ function FieldCard({
             />
           </div>
 
-          <div className="field-group">
-            <label className="label">⏱️ Límite de tiempo (segundos)</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input
-                type="number"
-                className="input"
-                style={{ width: '80px' }}
-                value={field.time_limit ?? 0}
-                onChange={(e) => onUpdate({ time_limit: Math.max(0, parseInt(e.target.value) || 0) })}
-                min="0"
-              />
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>segundos (0 = sin límite)</span>
+          {store.presentationMode !== 'classic' && (
+            <div className="field-group">
+              <label className="label">Límite de tiempo (segundos)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  type="number"
+                  className="input"
+                  style={{ width: '80px' }}
+                  value={field.time_limit ?? 0}
+                  onChange={(e) => onUpdate({ time_limit: Math.max(0, parseInt(e.target.value) || 0) })}
+                  min="0"
+                />
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>segundos (0 = sin límite)</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
