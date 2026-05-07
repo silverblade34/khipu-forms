@@ -17,6 +17,7 @@ interface BuilderState {
   stepByStep: boolean;
   informedConsent: string;
   presentationMode: 'classic' | 'cards' | 'duolingo';
+  showHints: boolean;
   fields: FormField[];
   isDirty: boolean;
   isSaving: boolean;
@@ -34,6 +35,7 @@ interface BuilderState {
   setStepByStep: (v: boolean) => void;
   setInformedConsent: (v: string) => void;
   setPresentationMode: (v: 'classic' | 'cards' | 'duolingo') => void;
+  setShowHints: (v: boolean) => void;
   setFields: (fields: FormField[]) => void;
   addField: (type: FormField['type']) => void;
   removeField: (id: string) => void;
@@ -58,6 +60,7 @@ const initialState = {
   stepByStep: false,
   informedConsent: '',
   presentationMode: 'classic' as const,
+  showHints: false,
   fields: [],
   isDirty: false,
   isSaving: false,
@@ -78,6 +81,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setStepByStep: (stepByStep) => set({ stepByStep, isDirty: true }),
   setInformedConsent: (informedConsent) => set({ informedConsent, isDirty: true }),
   setPresentationMode: (presentationMode) => set({ presentationMode, isDirty: true }),
+  setShowHints: (showHints) => set({ showHints, isDirty: true }),
   setFields: (fields) => set({ fields, isDirty: false }),
 
   addField: (type) => {
@@ -88,7 +92,7 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
       type,
       label: getDefaultLabel(type),
       required: false,
-      options: (type === 'select' || type === 'radio') ? ['Opción 1', 'Opción 2'] : [],
+      options: (type === 'select' || type === 'radio' || type === 'checkbox') ? ['Opción 1', 'Opción 2'] : [],
       correct_answer: null,
       hint: null,
       explanation: null,
@@ -140,9 +144,9 @@ function getDefaultLabel(type: FormField['type']): string {
     textarea: 'Texto largo',
     number: 'Número',
     email: 'Correo electrónico',
-    select: 'Selección',
-    radio: 'Opción única',
-    checkbox: 'Casilla de verificación',
+    select: 'Desplegable (Lista)',
+    radio: 'Opción única (Radio)',
+    checkbox: 'Opción múltiple (Casillas)',
   };
   return labels[type];
 }

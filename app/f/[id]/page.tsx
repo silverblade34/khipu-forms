@@ -114,9 +114,18 @@ export default function PublicFormPage() {
       setFeedback(null);
       return;
     }
-    const correct = val.trim().toLowerCase() === field.correct_answer.trim().toLowerCase();
-    setFeedback({ correct, explanation: field.explanation });
-    if (correct) {
+    
+    let isCorrect = false;
+    if (field.type === 'checkbox') {
+      const selected = val.split(',').filter(Boolean).sort().join(',');
+      const correct = field.correct_answer.split(',').filter(Boolean).sort().join(',');
+      isCorrect = selected === correct;
+    } else {
+      isCorrect = val.trim().toLowerCase() === field.correct_answer.trim().toLowerCase();
+    }
+
+    setFeedback({ correct: isCorrect, explanation: field.explanation });
+    if (isCorrect) {
       setPoints(p => p + 10);
       setStreak(s => s + 1);
     } else {
@@ -461,17 +470,17 @@ export default function PublicFormPage() {
               <label style={{ display: 'block', fontSize: '20px', fontWeight: '700', color: 'white', lineHeight: '1.4' }}>
                 {field?.label}
               </label>
-              {field?.hint && (
-                <button 
-                  type="button" 
-                  onClick={() => setShowHint(showHint === field.id ? null : field.id)}
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, color: showHint === field.id ? '#fbbf24' : 'rgba(255,255,255,0.4)', transition: 'all 0.2s' }}
-                  title="Ver pista"
-                >
-                  💡
-                </button>
-              )}
-            </div>
+                {field?.hint && data.form.show_hints && (
+                  <button 
+                    type="button" 
+                    onClick={() => setShowHint(showHint === field.id ? null : field.id)}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, color: showHint === field.id ? '#fbbf24' : 'rgba(255,255,255,0.4)', transition: 'all 0.2s' }}
+                    title="Ver pista"
+                  >
+                    💡
+                  </button>
+                )}
+              </div>
             
             {showHint === field?.id && field?.hint && (
               <div className="animate-fade-in" style={{ background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '12px', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: '#fbbf24', lineHeight: '1.5' }}>
@@ -535,7 +544,7 @@ export default function PublicFormPage() {
                   <label style={{ display: 'block', fontSize: '20px', fontWeight: '700', color: 'white', lineHeight: '1.4' }}>
                     {field?.label}
                   </label>
-                  {field?.hint && !feedback && (
+                  {field?.hint && data.form.show_hints && !feedback && (
                     <button 
                       type="button" 
                       onClick={() => setShowHint(showHint === field.id ? null : field.id)}
@@ -650,10 +659,39 @@ function FieldRenderer({ field, value, onChange, error, hideLabel }: {
         </div>
       )}
       {field.type === 'checkbox' && (
-        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <input type="checkbox" checked={value === 'true'} onChange={(e) => onChange(e.target.checked ? 'true' : 'false')} style={{ width: '18px', height: '18px', accentColor: 'var(--accent)', cursor: 'pointer' }} />
-          <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>Confirmar selección</span>
-        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {field.options.map((opt) => {
+            const selected = (value?.split(',') || []).includes(opt);
+            return (
+              <div 
+                key={opt} 
+                className={`radio-option${selected ? ' selected' : ''}`} 
+                style={{ 
+                  background: 'rgba(255,255,255,0.03)', 
+                  border: `1px solid ${selected ? 'rgba(124,106,247,0.5)' : 'rgba(255,255,255,0.06)'}`, 
+                  borderRadius: '12px', padding: '12px 16px', cursor: 'pointer', transition: 'all 0.15s',
+                  display: 'flex', alignItems: 'center', gap: '10px'
+                }} 
+                onClick={() => {
+                  const current = value?.split(',').filter(Boolean) || [];
+                  const updated = selected ? current.filter(o => o !== opt) : [...current, opt];
+                  onChange(updated.join(','));
+                }}
+              >
+                <div style={{ 
+                  width: '18px', height: '18px', borderRadius: '4px', 
+                  border: `2px solid ${selected ? 'var(--accent)' : 'rgba(255,255,255,0.2)'}`,
+                  background: selected ? 'var(--accent)' : 'transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s'
+                }}>
+                  {selected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4"><polyline points="20 6 9 17 4 12"/></svg>}
+                </div>
+                <span style={{ fontSize: '14px' }}>{opt}</span>
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {error && <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>

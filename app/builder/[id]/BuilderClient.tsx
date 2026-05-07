@@ -16,9 +16,9 @@ const FIELD_TYPES: { type: FormField['type']; label: string; iconPath: string }[
   { type: 'textarea', label: 'Texto largo',  iconPath: 'M4 6h16M4 10h16M4 14h16M4 18h10' },
   { type: 'email',    label: 'Email',        iconPath: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 6l-10 7L2 6' },
   { type: 'number',   label: 'Número',       iconPath: 'M7 20l4-16m2 16l4-16M6 9h14M4 15h14' },
-  { type: 'radio',    label: 'Opción única', iconPath: 'M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01' },
-  { type: 'select',   label: 'Desplegable',  iconPath: 'M19 9l-7 7-7-7' },
-  { type: 'checkbox', label: 'Checkbox',     iconPath: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11' },
+  { type: 'radio',    label: 'Opción única (Radio)', iconPath: 'M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01' },
+  { type: 'select',   label: 'Desplegable (Lista)',  iconPath: 'M19 9l-7 7-7-7' },
+  { type: 'checkbox', label: 'Opción múltiple (Casillas)', iconPath: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11' },
 ];
 
 function FieldIcon({ path }: { path: string }) {
@@ -51,6 +51,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
     store.setStepByStep(form.step_by_step ?? false);
     store.setInformedConsent(form.informed_consent || '');
     store.setPresentationMode((form.presentation_mode as 'classic' | 'cards' | 'duolingo') ?? 'classic');
+    store.setShowHints(form.show_hints ?? false);
     store.setFields(initialFields);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.id]);
@@ -74,6 +75,7 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
           step_by_step: store.stepByStep,
           informed_consent: store.informedConsent || null,
           presentation_mode: store.presentationMode,
+          show_hints: store.showHints,
         }),
       });
       await fetch(`/api/forms/${form.id}/fields`, {
@@ -313,6 +315,14 @@ export default function BuilderClient({ form, fields: initialFields }: Props) {
                 description="Habilita la transición automática entre campos"
                 value={store.stepByStep}
                 onChange={() => store.setStepByStep(!store.stepByStep)}
+              />
+
+              {/* Toggle: Show Hints */}
+              <ToggleRow
+                label="💡 Habilitar pistas de ayuda"
+                description="Muestra pistas opcionales antes de responder"
+                value={store.showHints}
+                onChange={() => store.setShowHints(!store.showHints)}
               />
 
               {/* Informed Consent */}
@@ -640,7 +650,7 @@ function FieldCard({
             <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Campo obligatorio</span>
           </label>
 
-          {(field.type === 'select' || field.type === 'radio') && (
+          {(field.type === 'select' || field.type === 'radio' || field.type === 'checkbox') && (
             <div className="field-group">
               <label className="label">Opciones de respuesta</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -697,26 +707,47 @@ function FieldCard({
             </div>
           )}
 
-          {(field.type === 'select' || field.type === 'radio') && field.options.length > 0 && (
+          {(field.type === 'select' || field.type === 'radio' || field.type === 'checkbox') && field.options.length > 0 && (
             <div className="field-group">
               <label className="label">Respuesta correcta (Cuestionario)</label>
-              <select className="input" style={{ fontSize: '12px' }} value={field.correct_answer ?? ''} onChange={(e) => onUpdate({ correct_answer: e.target.value || null })}>
-                <option value="">Sin respuesta correcta</option>
-                {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
+              {field.type === 'checkbox' ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '10px', background: 'var(--bg-elevated)', borderRadius: '8px' }}>
+                  {field.options.map((opt) => (
+                    <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={(field.correct_answer?.split(',') || []).includes(opt)}
+                        onChange={(e) => {
+                          const current = field.correct_answer?.split(',').filter(Boolean) || [];
+                          const updated = e.target.checked ? [...current, opt] : current.filter(o => o !== opt);
+                          onUpdate({ correct_answer: updated.join(',') || null });
+                        }}
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <select className="input" style={{ fontSize: '12px' }} value={field.correct_answer ?? ''} onChange={(e) => onUpdate({ correct_answer: e.target.value || null })}>
+                  <option value="">Sin respuesta correcta</option>
+                  {field.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              )}
             </div>
           )}
 
-          <div className="field-group">
-            <label className="label">Pista (ayuda antes de responder)</label>
-            <textarea
-              className="textarea"
-              style={{ minHeight: '50px', fontSize: '12px' }}
-              value={field.hint ?? ''}
-              onChange={(e) => onUpdate({ hint: e.target.value || null })}
-              placeholder="Ej: Recuerda que la capital está en la costa..."
-            />
-          </div>
+          {store.showHints && (
+            <div className="field-group">
+              <label className="label">💡 Pista (ayuda antes de responder)</label>
+              <textarea
+                className="textarea"
+                style={{ minHeight: '50px', fontSize: '12px' }}
+                value={field.hint ?? ''}
+                onChange={(e) => onUpdate({ hint: e.target.value || null })}
+                placeholder="Ej: Recuerda que la capital está en la costa..."
+              />
+            </div>
+          )}
 
           {store.presentationMode !== 'classic' && (
             <div className="field-group">
