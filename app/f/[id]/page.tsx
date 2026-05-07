@@ -9,6 +9,60 @@ interface QuizResult { score: number; max_score: number; results: Record<string,
 
 const cleanLabel = (label: string) => label.replace(/\s*\((Casillas|Radio|Lista)\)/gi, '').trim();
 
+// ── Shared header (standalone to prevent flickering) ──────────────────────────
+const TopBar = ({ 
+  formTitle, 
+  currentMode, 
+  streak, 
+  points, 
+  lives, 
+  total, 
+  currentIndex, 
+  answered, 
+  progress, 
+  timeLeft 
+}: { 
+  formTitle: string;
+  currentMode: string;
+  streak: number;
+  points: number;
+  lives: number;
+  total: number;
+  currentIndex: number;
+  answered: number;
+  progress: number;
+  timeLeft: number | null;
+}) => (
+  <>
+    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.8)', backdropFilter: 'blur(15px)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
+      <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '22px', width: 'auto', flexShrink: 0 }} />
+      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formTitle}</span>
+      {currentMode === 'duolingo' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+          <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>🔥 {streak}</span>
+          <span style={{ fontSize: '12px', fontWeight: '700', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '4px' }}>⭐ {points}</span>
+          <div style={{ display: 'flex', gap: '3px' }}>
+            {[...Array(3)].map((_, i) => <span key={i} style={{ fontSize: '14px', opacity: i < lives ? 1 : 0.2 }}>❤️</span>)}
+          </div>
+        </div>
+      )}
+      {currentMode !== 'duolingo' && total > 0 && (
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0 }}>{currentMode === 'classic' ? `${answered}/${total}` : `${currentIndex + 1}/${total}`}</span>
+      )}
+      {timeLeft !== null && (
+        <div style={{ marginLeft: '12px', padding: '4px 8px', background: timeLeft < 5 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', color: timeLeft < 5 ? '#ef4444' : 'white', fontSize: '12px', fontWeight: '700', border: `1px solid ${timeLeft < 5 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`, transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          0:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+        </div>
+      )}
+    </div>
+    {/* Progress bar */}
+    <div style={{ height: '3px', background: 'rgba(255,255,255,0.05)', position: 'sticky', top: '43px', zIndex: 10 }}>
+      <div style={{ height: '100%', background: currentMode === 'duolingo' ? 'linear-gradient(90deg,#22c55e,#86efac)' : 'linear-gradient(90deg,var(--accent),#a78bfa)', width: currentMode === 'classic' ? `${progress}%` : `${Math.round(((currentIndex) / total) * 100)}%`, transition: 'width 0.4s ease', boxShadow: '0 0 8px rgba(124,106,247,0.4)' }} />
+    </div>
+  </>
+);
+
 export default function PublicFormPage() {
   const params = useParams();
   const formId = params.id as string;
@@ -389,43 +443,21 @@ export default function PublicFormPage() {
     mode = 'cards';
   }
 
-  // ── Shared header (sticky top bar) ──────────────────────────────────────────
-  const TopBar = ({ currentMode }: { currentMode: string }) => (
-    <>
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(10,10,11,0.8)', backdropFilter: 'blur(15px)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', position: 'sticky', top: 0, zIndex: 10 }}>
-        <img src="/logo-form-khipu.png" alt="Khipu Forms" style={{ height: '22px', width: 'auto', flexShrink: 0 }} />
-        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.form.title}</span>
-        {currentMode === 'duolingo' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>🔥 {streak}</span>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '4px' }}>⭐ {points}</span>
-            <div style={{ display: 'flex', gap: '3px' }}>
-              {[...Array(3)].map((_, i) => <span key={i} style={{ fontSize: '14px', opacity: i < lives ? 1 : 0.2 }}>❤️</span>)}
-            </div>
-          </div>
-        )}
-        {currentMode !== 'duolingo' && total > 0 && (
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0 }}>{currentMode === 'classic' ? `${answered}/${total}` : `${currentIndex + 1}/${total}`}</span>
-        )}
-        {timeLeft !== null && (
-          <div style={{ marginLeft: '12px', padding: '4px 8px', background: timeLeft < 5 ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)', borderRadius: '8px', color: timeLeft < 5 ? '#ef4444' : 'white', fontSize: '12px', fontWeight: '700', border: `1px solid ${timeLeft < 5 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`, transition: 'all 0.3s', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            0:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
-          </div>
-        )}
-      </div>
-      {/* Progress bar */}
-      <div style={{ height: '3px', background: 'rgba(255,255,255,0.05)', position: 'sticky', top: '43px', zIndex: 10 }}>
-        <div style={{ height: '100%', background: currentMode === 'duolingo' ? 'linear-gradient(90deg,#22c55e,#86efac)' : 'linear-gradient(90deg,var(--accent),#a78bfa)', width: currentMode === 'classic' ? `${progress}%` : `${Math.round(((currentIndex) / total) * 100)}%`, transition: 'width 0.4s ease', boxShadow: '0 0 8px rgba(124,106,247,0.4)' }} />
-      </div>
-    </>
-  );
-
-  // ── CLASSIC mode ─────────────────────────────────────────────────────────────
   if (mode === 'classic') return (
     <div className="public-form-wrapper">
       <div className="mesh-gradient" />
-      <TopBar currentMode="classic" />
+      <TopBar 
+        formTitle={data.form.title}
+        currentMode="classic"
+        streak={streak}
+        points={points}
+        lives={lives}
+        total={total}
+        currentIndex={currentIndex}
+        answered={answered}
+        progress={progress}
+        timeLeft={timeLeft}
+      />
       <div style={{ maxWidth: '640px', width: '100%', margin: '0 auto', padding: '40px 20px 80px', position: 'relative', zIndex: 1 }}>
         <div style={{ marginBottom: '32px', padding: '0 4px' }} className="animate-fade-in">
           <h1 style={{ fontSize: '28px', fontWeight: '800', color: 'white', letterSpacing: '-0.03em', lineHeight: '1.2', marginBottom: '10px' }}>{data.form.title}</h1>
@@ -460,7 +492,18 @@ export default function PublicFormPage() {
   if (mode === 'cards') return (
     <div className="public-form-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div className="mesh-gradient" />
-      <TopBar currentMode="cards" />
+      <TopBar 
+        formTitle={data.form.title}
+        currentMode="cards"
+        streak={streak}
+        points={points}
+        lives={lives}
+        total={total}
+        currentIndex={currentIndex}
+        answered={answered}
+        progress={progress}
+        timeLeft={timeLeft}
+      />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', position: 'relative', zIndex: 1 }}>
         {/* Step counter */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
@@ -527,7 +570,18 @@ export default function PublicFormPage() {
   return (
     <div className="public-form-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div className="mesh-gradient" style={{ opacity: feedback?.correct ? 0.6 : feedback ? 0.3 : 1, transition: 'opacity 0.3s' }} />
-      <TopBar currentMode="duolingo" />
+      <TopBar 
+        formTitle={data.form.title}
+        currentMode="duolingo"
+        streak={streak}
+        points={points}
+        lives={lives}
+        total={total}
+        currentIndex={currentIndex}
+        answered={answered}
+        progress={progress}
+        timeLeft={timeLeft}
+      />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', position: 'relative', zIndex: 1 }}>
         {isGameOver ? (
